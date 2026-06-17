@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="si" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ඉලෙක්ට්‍රොනික විද්‍යාව · Flashcard Studio</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- MathJax -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$','$'],['\\(','\\)']],
+                displayMath: [['$$','$$'],['\\[','\\]']],
+                processEscapes: true,
+            },
+            options: { ignoreHtmlClass: 'no-mathjax', processHtmlClass: 'math-content' },
+            startup: { typeset: false },
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700;800&family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0c0e14;
+            --surface: #13151e;
+            --surface-2: #1a1d29;
+            --surface-3: #212435;
+            --border: rgba(255,255,255,0.07);
+            --border-strong: rgba(255,255,255,0.14);
+
+            --theory-from: #3b4fd8;
+            --theory-to: #6366f1;
+            --theory-glow: rgba(99,102,241,0.35);
+
+            --deep-from: #7e22ce;
+            --deep-to: #a855f7;
+            --deep-glow: rgba(168,85,247,0.35);
+
+            --think-from: #0d7569;
+            --think-to: #14b8a6;
+            --think-glow: rgba(20,184,166,0.35);
+
+            --keep-from: #b45309;
+            --keep-to: #f59e0b;
+            --keep-glow: rgba(245,158,11,0.35);
+
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #475569;
+
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', 'Noto Sans Sinhala', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Ambient background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 10%, rgba(99,102,241,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168,85,247,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 30% at 50% 50%, rgba(20,184,166,0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Noise texture overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            background-size: 200px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            width: 300px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            z-index: 50;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar { transform: translateX(0) !important; }
+            .main-content { margin-left: 300px; }
+        }
+
+        .sidebar-logo {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-logo-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            line-height: 1.3;
+        }
+        .sidebar-logo-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border: 1px solid rgba(99,102,241,0.3);
+            background: rgba(99,102,241,0.12);
+            color: #a5b4fc;
+            margin-top: 10px;
+        }
+        .badge-pill .dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: #818cf8;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%,100% { opacity:1; transform:scale(1); }
+            50% { opacity:0.4; transform:scale(1.6); }
+        }
+
+        /* Nav sections */
+        .nav-section {
+            padding: 20px 16px 0;
+        }
+        .nav-section-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 0 8px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.18s ease;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-bottom: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-item:hover {
+            background: var(--surface-2);
+            color: var(--text-primary);
+        }
+        .nav-item.active {
+            background: rgba(99,102,241,0.15);
+            color: #a5b4fc;
+            font-weight: 600;
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 20%; bottom: 20%;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: linear-gradient(180deg, #818cf8, #6366f1);
+        }
+        .nav-item-id {
+            font-family: 'Syne', monospace;
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            min-width: 28px;
+            flex-shrink: 0;
+        }
+        .nav-item.active .nav-item-id { color: #818cf8; }
+        .nav-item-text {
+            flex: 1;
+            line-height: 1.35;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .sidebar-footer {
+            margin: 16px 16px 24px;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.08));
+            border: 1px solid rgba(99,102,241,0.2);
+        }
+        .sidebar-footer p { font-size: 0.72rem; color: #94a3b8; line-height: 1.5; }
+        .sidebar-footer strong { color: #a5b4fc; }
+
+        /* ========== MOBILE HEADER ========== */
+        .mobile-header {
+            position: sticky; top: 0; z-index: 40;
+            background: rgba(12,14,20,0.92);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .mobile-header-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+        .menu-btn {
+            width: 38px; height: 38px;
+            border-radius: 9px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .menu-btn:hover { background: var(--surface-3); border-color: var(--border-strong); }
+        .menu-btn svg { width: 18px; height: 18px; color: var(--text-secondary); }
+
+        /* ========== OVERLAY ========== */
+        .overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 45;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        .overlay.visible { opacity: 1; pointer-events: all; }
+
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            position: relative; z-index: 1;
+            min-height: 100vh;
+            padding: 32px 28px 60px;
+            max-width: 1200px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content { padding: 20px 16px 60px; margin-left: 0; }
+        }
+
+        /* Section header area */
+        .section-header-area {
+            margin-bottom: 32px;
+            animation: fade-up 0.5s ease both;
+        }
+        .section-eyebrow {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #6366f1;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-eyebrow::before {
+            content: '';
+            width: 20px; height: 2px;
+            background: linear-gradient(90deg, #6366f1, transparent);
+            border-radius: 2px;
+        }
+        .section-main-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            color: var(--text-primary);
+        }
+        .section-sub-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            padding: 6px 14px;
+            border-radius: 99px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-strong);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .section-sub-badge .icon { font-size: 0.9rem; }
+
+        /* Progress bar */
+        .progress-strip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            animation: fade-up 0.5s 0.05s ease both;
+        }
+        .progress-bar-wrap {
+            flex: 1;
+            height: 3px;
+            background: var(--surface-3);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            border-radius: 99px;
+            transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .progress-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* Keyboard hint */
+        .keyboard-hints {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px;
+            animation: fade-up 0.5s 0.08s ease both;
+        }
+        .kbd-hint {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.68rem; color: var(--text-muted);
+        }
+        .kbd {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 2px 7px;
+            border-radius: 5px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-strong);
+            font-family: 'Syne', monospace;
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
+        }
+
+        /* ========== FLASHCARD GRID ========== */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            animation: fade-up 0.5s 0.1s ease both;
+        }
+        @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } }
+        @media (min-width: 1200px) { .card-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        /* ========== FLASHCARD ========== */
+        .card-wrap {
+            perspective: 1400px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            animation: card-appear 0.45s ease both;
+        }
+        @keyframes card-appear {
+            from { opacity:0; transform: translateY(24px) scale(0.96); }
+            to { opacity:1; transform: translateY(0) scale(1); }
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%; height: 100%; min-height: 340px;
+            transform-style: preserve-3d;
+            transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        .card-wrap.flipped .card-inner { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute; inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        /* Front */
+        .card-front {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 12px;
+            padding: 28px 24px;
+            position: relative;
+        }
+        .card-front::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+        /* Corner decoration */
+        .card-front::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 0 var(--radius) 0 100%;
+        }
+
+        .card-icon-wrap {
+            width: 60px; height: 60px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        .card-wrap:hover .card-icon-wrap { transform: scale(1.08) rotate(-3deg); }
+
+        .card-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #fff;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .card-subsection-tag {
+            font-size: 0.67rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.65);
+            max-width: 180px;
+            line-height: 1.4;
+        }
+        .card-hint {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 12px;
+            border-radius: 99px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+            margin-top: 4px;
+            transition: background 0.2s ease;
+        }
+        .card-wrap:hover .card-hint { background: rgba(255,255,255,0.18); }
+
+        /* Card category gradient themes */
+        .ct-theory .card-front {
+            background: linear-gradient(145deg, #2d3ab0 0%, #4550d0 30%, #5b66e8 60%, #818cf8 100%);
+            box-shadow: 0 20px 60px rgba(79,70,229,0.4), 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .ct-deep .card-front {
+            background: linear-gradient(145deg, #5b1a9e 0%, #7c3aed 40%, #9d5cf6 70%, #c084fc 100%);
+            box-shadow: 0 20px 60px rgba(124,58,237,0.4), 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .ct-think .card-front {
+            background: linear-gradient(145deg, #065f5a 0%, #0d9488 40%, #14c4b0 70%, #5eead4 100%);
+            box-shadow: 0 20px 60px rgba(13,148,136,0.4), 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .ct-keep .card-front {
+            background: linear-gradient(145deg, #92400e 0%, #d97706 40%, #f59e0b 70%, #fbbf24 100%);
+            box-shadow: 0 20px 60px rgba(217,119,6,0.4), 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Back */
+        .card-back {
+            transform: rotateY(180deg);
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            padding: 22px 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .ct-theory .card-back { border-top: 3px solid #6366f1; }
+        .ct-deep .card-back { border-top: 3px solid #a855f7; }
+        .ct-think .card-back { border-top: 3px solid #14b8a6; }
+        .ct-keep .card-back { border-top: 3px solid #f59e0b; }
+
+        .card-back-header {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-back-icon { font-size: 1rem; }
+        .card-back-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .ct-theory .card-back-title { color: #818cf8; }
+        .ct-deep .card-back-title { color: #c084fc; }
+        .ct-think .card-back-title { color: #5eead4; }
+        .ct-keep .card-back-title { color: #fbbf24; }
+
+        .card-back-content {
+            font-size: 0.82rem;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+        .card-back-content strong, .card-back-content b {
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+        .card-back-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .card-back-content li {
+            padding-left: 16px;
+            position: relative;
+        }
+        .card-back-content li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            top: 0.15em;
+        }
+        .card-back-content .sub-list {
+            margin-left: 16px;
+            margin-top: 4px;
+        }
+        .card-back-content .sub-list li::before { content: '·'; }
+
+        /* Hover lift */
+        .card-wrap:not(.flipped):hover .card-inner {
+            transform: translateY(-6px) rotateY(3deg);
+        }
+        .card-wrap.flipped:hover .card-inner {
+            transform: rotateY(183deg) translateY(-4px);
+        }
+
+        /* ========== FLIP ALL BUTTON ========== */
+        .flip-all-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 9px 20px;
+            border-radius: 99px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-strong);
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.01em;
+        }
+        .flip-all-btn:hover {
+            background: var(--surface-3);
+            color: var(--text-primary);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+        .flip-all-btn.all-flipped {
+            background: rgba(99,102,241,0.15);
+            border-color: rgba(99,102,241,0.35);
+            color: #a5b4fc;
+        }
+
+        /* ========== EMPTY STATE ========== */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 50vh; gap: 16px; text-align: center;
+        }
+        .empty-state-icon {
+            width: 80px; height: 80px;
+            border-radius: 24px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes fade-up {
+            from { opacity:0; transform: translateY(16px); }
+            to { opacity:1; transform: translateY(0); }
+        }
+
+        /* ========== SECTION DIVIDER ========== */
+        .section-divider {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 8px;
+        }
+        .section-divider-line {
+            flex: 1; height: 1px; background: var(--border);
+        }
+
+        /* Touch active state */
+        @media (hover: none) {
+            .card-wrap:hover .card-inner { transform: none; }
+            .card-wrap.flipped:hover .card-inner { transform: rotateY(180deg); }
+        }
+
+        /* Credit footer */
+        .sidebar-credit {
+            margin: 0 16px 20px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .credit-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+        .credit-dot {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: #6366f1;
+            flex-shrink: 0;
+        }
+        .credit-row strong { color: #64748b; font-weight: 600; }
+        .credit-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            padding: 2px 0;
+        }
+        .credit-link:hover { color: #2CA5E0; }
+        .credit-link svg { color: #2CA5E0; flex-shrink: 0; opacity: 0.7; transition: opacity 0.2s; }
+        .credit-link:hover svg { opacity: 1; }
+        .credit-link strong { color: #64748b; font-weight: 600; transition: color 0.2s; }
+        .credit-link:hover strong { color: #2CA5E0; }
+
+        /* MathJax fix for dark mode */
+        .MathJax { color: #e2e8f0 !important; }
+        .mjx-chtml { color: #e2e8f0 !important; }
+    </style>
+</head>
+<body>
+
+<!-- Overlay -->
+<div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+
+<!-- Mobile Header -->
+<header class="mobile-header md:hidden">
+    <button class="menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+    </button>
+    <span class="mobile-header-title">⚡ ඉලෙක්ට්‍රොනික විද්‍යාව</span>
+    <div style="width:38px"></div>
+</header>
+
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar">
+    <div class="sidebar-logo">
+        <div class="sidebar-logo-title">⚡ ඉලෙක්ට්‍රොනික<br>විද්‍යාව</div>
+        <div class="sidebar-logo-sub">Unit 09 · Flashcard Studio</div>
+        <div class="badge-pill">
+            <span class="dot"></span>
+            Select sub-section
+        </div>
+    </div>
+
+    <nav id="sidebarNav" style="flex:1; padding-bottom:8px;"><!-- JS populated --></nav>
+
+    <div class="sidebar-footer">
+        <p><strong>💡 ඉඟිය:</strong> කාඩ් එකක් මත ක්ලික් කළ විට පෙරළේ. <strong>F</strong> key ඔබා සියලු කාඩ් එකවර පෙරළන්න.</p>
+    </div>
+
+    <div class="sidebar-credit">
+        <div class="credit-row">
+            <span class="credit-dot"></span>
+            <span>Code by <strong>Claude AI</strong></span>
+        </div>
+        <a href="https://t.me/k3N_edu" target="_blank" rel="noopener" class="credit-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.64-.203-.657-.64.136-.954l11.57-4.461c.537-.194 1.006.131.828.943z"/>
+            </svg>
+            Developed by <strong>K3nfold</strong>
+        </a>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content" id="mainContent">
+    <!-- Section Header -->
+    <div class="section-header-area" id="sectionHeaderArea">
+        <div class="section-eyebrow" id="sectionEyebrow">Unit 09</div>
+        <h1 class="section-main-title" id="mainSectionTitle">01 කොටස: අර්ධ සන්නායක සහ දියෝඩ</h1>
+        <div class="section-sub-badge" id="currentSubBadge">
+            <span class="icon">📌</span>
+            <span id="subBadgeText">1.1 සන්නායක, පරිවාරක සහ අර්ධ සන්නායක</span>
+        </div>
+    </div>
+
+    <!-- Controls row -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px;" class="animate-fadeIn">
+        <div class="keyboard-hints" style="margin-bottom:0;">
+            <span class="kbd-hint"><kbd class="kbd">F</kbd> Flip all</span>
+            <span class="kbd-hint"><kbd class="kbd">↑↓</kbd> Navigate</span>
+            <span class="kbd-hint"><kbd class="kbd">Esc</kbd> Close</span>
+        </div>
+        <button id="flipAllBtn" class="flip-all-btn" onclick="toggleAllCards()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4"/>
+            </svg>
+            Flip All Cards
+        </button>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-strip">
+        <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <div class="progress-label" id="progressLabel">0 / 0</div>
+    </div>
+
+    <!-- Flashcard Grid -->
+    <div id="flashcardGrid" class="card-grid"></div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state hidden">
+        <div class="empty-state-icon">📚</div>
+        <h3 style="font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; color:var(--text-primary);">උප කොටසක් තෝරන්න</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">පැති තීරුවෙන් අධ්‍යයනය කිරීමට අවශ්‍ය උප කොටස තෝරාගන්න.</p>
+    </div>
+</main>
+
+<script>
+// =============================================
+// DATA LAYER
+// =============================================
+const flashcardData = [
+    // ==================== SECTION 01 ====================
+    {
+        sectionId: '01',
+        sectionTitle: '01 කොටස: අර්ධ සන්නායක සහ දියෝඩ (Semiconductors & Diodes)',
+        subSectionId: '1.1',
+        subSectionTitle: '1.1 සන්නායක, පරිවාරක සහ අර්ධ සන්නායක',
+        theory: `*   **සන්නායක (Conductors):** කාමර උෂ්ණත්වය යටතේ දී සියලු පරමාණු පාහේ අයනීකරණය වූ ද්‍රව්‍යයි. නිදහස් ඉලෙක්ට්‍රෝන විශාල වශයෙන් පවතින බැවින් පහසුවෙන් විදුලි ධාරාවක් ඇති කළ හැකිය. (ප්‍රතිරෝධකතාව $10^{-8}\\ \\Omega\\text{m}$ ට වඩා අඩුය.)
+*   **පරිවාරක (Insulators):** කාමර උෂ්ණත්වය යටතේ දී පරමාණු අයනීකරණය නොවූ (හෝ ඉතා සුළු වශයෙන් අයනීකරණය වූ) ද්‍රව්‍යයි. නිදහස් ඉලෙක්ට්‍රෝන නොමැති බැවින් විදුලි ධාරාවක් ඇති කළ නොහැකිය. (ප්‍රතිරෝධකතාව $10^{5}\\ \\Omega\\text{m}$ ට වඩා වැඩිය.)
+*   **අර්ධ සන්නායක (Semiconductors):** කාමර උෂ්ණත්වය යටතේ දී යම් ප්‍රමාණයක් පරමාණු අයනීකරණය වූ ද්‍රව්‍යයි. මේවා විදුලි ගැලීමේ දී සන්නායක වලටත් පරිවාරකවලටත් අතරමැදි ගුණ පෙන්වයි. (ප්‍රතිරෝධකතාව $10^{-3}\\ \\Omega\\text{m}$ සිට $10^{5}\\ \\Omega\\text{m}$ දක්වා වේ.) උදා: ජර්මේනියම් (Ge), සිලිකන් (Si).`,
+        deepTheory: `*   **ප්‍රතිරෝධකතාවේ උෂ්ණත්ව සංගුණකය:** සන්නායකවල උෂ්ණත්වය වැඩි කළ විට ජාලක කම්පන වැඩි වී විදුලිය ගැලීමේ ශක්‍යතාව අඩුවන බැවින් ප්‍රතිරෝධකතාවේ උෂ්ණත්ව සංගුණකය ධන (+) වේ. අර්ධ සන්නායකවල උෂ්ණත්වය වැඩි කළ විට තාප ශක්තිය නිසා සහසංයුජ බන්ධන බිඳී වැඩි පරමාණු ප්‍රමාණයක් අයනීකරණය වී නිදහස් වාහක ජනනය වන බැවින් විදුලිය ගැලීමේ හැකියාව වැඩි වේ. එම නිසා ප්‍රතිරෝධකතාවේ උෂ්ණත්ව සංගුණකය සෘණ (-) වේ.`,
+        howToThink: `*   ප්‍රශ්නයක නිදහස් ඉලෙක්ට්‍රෝන සාන්ද්‍රණ අගයන් ලබා දී තිබේ නම්, ඉහළම සාන්ද්‍රණය ඇති ද්‍රව්‍යය ($10^{22}\\ \\text{cm}^{-3}$ පමණ වන තඹ වැනි) සන්නායක ලෙසත්, අතරමැදි අගය ($10^{10}\\ \\text{cm}^{-3}$ පමණ වන සිලිකන් වැනි) අර්ධ සන්නායක ලෙසත්, නිදහස් ඉලෙක්ට්‍රෝන නොමැති තරම් ($1\\ \\text{cm}^{-3}$ ට අඩු ක්වාට්ස් වැනි) ද්‍රව්‍ය පරිවාරක ලෙසත් හඳුනාගන්න.`,
+        keepInMind: `*   උෂ්ණත්වය වැඩි කරන විට සන්නායකවල ප්‍රතිරෝධය *වැඩි වන* අතර, අර්ධ සන්නායකවල ප්‍රතිරෝධය *අඩු වන* (සන්නායකතාව වැඩි වන) බව සැමවිටම සිහි තබා ගත යුතුය.`,
+    },
+    {
+        sectionId: '01',
+        sectionTitle: '01 කොටස: අර්ධ සන්නායක සහ දියෝඩ (Semiconductors & Diodes)',
+        subSectionId: '1.2',
+        subSectionTitle: '1.2 නිසඟ අර්ධ සන්නායක (Intrinsic Semiconductors)',
+        theory: `*   කිසිදු බාහිර අපද්‍රව්‍යයක් මිශ්‍ර නොකළ සම්පූර්ණයෙන්ම සංශුද්ධ තත්ත්වයේ පවත්නා අර්ධ සන්නායක වේ. මේවා IV වන කාණ්ඩයට අයත් බැවින් සෑම පරමාණුවක්ම තවත් පරමාණු හතරක් සමඟ සහසංයුජ බන්ධන සාදා ගත් ත්‍රිමාන දැලිස් ස්වරූපයෙන් පවතී.
+*   **ජනන ක්‍රියාවලිය (Generation):** තාප ශක්තිය නිසා සහසංයුජ බන්ධන බිඳී ඉලෙක්ට්‍රෝනයක් නිදහස් වන විට, එම සහසංයුජ බන්ධනයේ ඉලෙක්ට්‍රෝන ඌණතාවක් ඇති වන අතර මෙම ඌණතාව **කුහරයක් (Hole)** ලෙස හැඳින්වේ. කුහර ධන (+) ආරෝපණ වාහක ලෙස සැලකේ.`,
+        deepTheory: `*   **ප්‍රතිසංයෝජනය (Recombination):** නිදහස් ඉලෙක්ට්‍රෝනයක් සහ කුහරයක් එක් වී ආරෝපණ වාහක උදාසීන වීමේ ක්‍රියාවලියයි. මෙහි සීඝ්‍රතාව ඒකක පරිමාවක ඇති වාහක සාන්ද්‍රණය මත රඳා පවතී. දෙන ලද උෂ්ණත්වයක දී ජනන සීඝ්‍රතාව සහ ප්‍රතිසංයෝජන සීඝ්‍රතාව සමාන වන බැවින් නිසඟ වාහක සාන්ද්‍රණය ($n_i$) නියත වේ.
+*   **ධාරාව:** බාහිරින් විභව අන්තරයක් යෙදූ විට හටගන්න විද්‍යුත් ක්ෂේත්‍රය නිසා නිදහස් ඉලෙක්ට්‍රෝන ක්ෂේත්‍රයට විරුද්ධව ද, කුහර ක්ෂේත්‍රයේ දිශාවට ද චලනය වේ. එම නිසා සම්පූර්ණ ධාරාව ($I$), ඉලෙක්ට්‍රෝන ධාරාවේ ($I_e$) සහ කුහර ධාරාවේ ($I_h$) එකතුවට සමාන වේ ($I = I_e + I_h$).`,
+        howToThink: `*   නිසඟ අර්ධ සන්නායකයක බාහිරින් කිසිවක් මිශ්‍ර කර නොමැති බැවින්, තාපය නිසා බිහිවන්නේ ඉලෙක්ට්‍රෝන-කුහර යුගල බැවින් සැමවිටම නිදහස් ඉලෙක්ට්‍රෝන සාන්ද්‍රණය ($n_e$) සහ කුහර සාන්ද්‍රණය ($n_h$) එකිනෙකට සමාන වේ ($n_e = n_h = n_i$).`,
+        keepInMind: `*   කුහරයක් යනු සැබෑ නිදහස් අංශුවක් නොව සහසංයුජ බන්ධනයක පවතින ඉලෙක්ට්‍රෝන ඌණතාවයකි. නමුත් විද්‍යුත් ක්ෂේත්‍රයක් යෙදූ විට එය ධන ආරෝපණයක් ලෙස ක්ෂේත්‍රයේ දිශාවට චලනය වන වාහකයක් ලෙස හැසිරේ.`,
+    },
+    {
+        sectionId: '01',
+        sectionTitle: '01 කොටස: අර්ධ සන්නායක සහ දියෝඩ (Semiconductors & Diodes)',
+        subSectionId: '1.3',
+        subSectionTitle: '1.3 බාහ්‍ය අර්ධ සන්නායක (Extrinsic Semiconductors) සහ මාත්‍රණය',
+        theory: `*   **මාත්‍රණය (Doping):** සන්නායකතාව ඉහළ නැංවීම සඳහා පාලිත තත්ත්ව යටතේ සංශුද්ධ අර්ධ සන්නායකවලට ආගන්තුක පරමාණු (අශුද්ධ ද්‍රව්‍ය - Impurities) එකතු කිරීමේ ක්‍රියාවලියයි.
+*   **n-වර්ගය (n-type):** IV වන කාණ්ඩයේ මූලද්‍රව්‍යයක් (Si), V වන කාණ්ඩයේ (P, As) දායක පරමාණු (Donor atoms) මඟින් මාත්‍රණය කිරීමෙන් සාදා ගනී. සහසංයුජ බන්ධන 4ක් සෑදූ පසු පස්වන ඉලෙක්ට්‍රෝනය නිදහස් වේ. (බහුතර වාහක = ඉලෙක්ට්‍රෝන, අල්පතර වාහක = කුහර).
+*   **p-වර්ගය (p-type):** IV වන කාණ්ඩයේ මූලද්‍රව්‍යයක් (Si), III වන කාණ්ඩයේ (B, In, Al) ප්‍රතිග්‍රාහක පරමාණු (Acceptor atoms) මඟින් මාත්‍රණය කිරීමෙන් සාදා ගනී. බන්ධනයක් සම්පූර්ණ කිරීමට ඉලෙක්ට්‍රෝනයක් අඩු බැවින් කුහරයක් ජනනය වේ. (බහුතර වාහක = කුහර, අල්පතර වාහක = ඉලෙක්ට්‍රෝන).`,
+        deepTheory: `*   මාත්‍රණයේදී එකතු කරන පරමාණු ප්‍රමාණය නිසා බහුතර වාහක සාන්ද්‍රණය ඉතා විශාල ලෙස වැඩි වන අතර, ප්‍රතිසංයෝජන සීඝ්‍රතාව ඉහළ යාම නිසා අල්පතර වාහක සාන්ද්‍රණය නිසඟ අවස්ථාවටත් වඩා බෙහෙවින් අඩු වේ. උෂ්ණත්වය වැඩි කරන විට බහුතර වාහක සාන්ද්‍රණයට වඩා අල්පතර වාහක සාන්ද්‍රණය ප්‍රතිශතයක් ලෙස විශාල ලෙස වෙනස් වේ (වැඩි වේ).`,
+        howToThink: `*   බාහ්‍ය අර්ධ සන්නායකයක බහුතර වාහක සාන්ද්‍රණය දළ වශයෙන් එකතු කළ දායක හෝ ප්‍රතිග්‍රාහක පරමාණු සාන්ද්‍රණයට සමාන වේ ($n_e \\approx N_D$ හෝ $n_h \\approx N_A$).`,
+        keepInMind: `*   p-වර්ගයේ හෝ n-වර්ගයේ වේවා, බාහ්‍ය අර්ධ සන්නායක ස්ඵටිකය සමස්තයක් ලෙස **විද්‍යුත් වශයෙන් උදාසීන වේ**. ස්ඵටික දැලිස තුළ ඇති ස්ථාවර අයන (දායක ධන අයන හෝ ප්‍රතිග්‍රාහක සෘණ අයන) මඟින් නිදහස් වාහකයන්ගේ ආරෝපණය සමතුලිත කරන බැවින් ඒවා ස්ඵටිකය තුළ ස්ථාවරව බැඳී පවතින අතර ආරෝපණ වාහක නොවේ.`,
+    },
+    {
+        sectionId: '01',
+        sectionTitle: '01 කොටස: අර්ධ සන්නායක සහ දියෝඩ (Semiconductors & Diodes)',
+        subSectionId: '1.4',
+        subSectionTitle: '1.4 p-n සන්ධිය සහ දියෝඩ ලාක්ෂණික වක්‍ර',
+        theory: `*   p-වර්ගයේ සහ n-වර්ගයේ කලාප සන්ධි කළ විට වාහක විසරණය වීම නිසා සන්ධිය දෙපස නිදහස් වාහකයන්ගෙන් තොර **අවක්ෂේප කලාපයක් (Depletion Layer)** සහ **විභව බාධකයක් (Potential Barrier)** නිර්මාණය වේ. (Si සඳහා $\\approx 0.7\\ \\text{V}$, Ge සඳහා $\\approx 0.3\\ \\text{V}$).
+*   **පෙර නැඹුරුව (Forward Bias):** p-කලාපය (+) අග්‍රයටත් n-කලාපය (-) අග්‍රයටත් සම්බන්ධ කිරීම. අවක්ෂේප කලාපයේ පළල අඩු වේ. දණහිස් වෝල්ටීයතාව (Knee Voltage) ඉක්මවූ පසු ධාරාව ඝාතීයව ඉහළ යයි.
+*   **පසු නැඹුරුව (Reverse Bias):** p-කලාපය (-) අග්‍රයටත් n-කලාපය (+) අග්‍රයටත් සම්බන්ධ කිරීම. අවක්ෂේප කලාපයේ පළල වැඩි වේ. අල්පතර වාහක නිසා ඉතා සුළු පසු සන්තෘප්ත ධාරාවක් ($I_s$) ගලයි. පසු වෝල්ටීයතාව අධික ලෙස වැඩි කළ විට සන්ධිය බිඳවැටීමට (Breakdown) ලක් වේ.`,
+        deepTheory: `*   පෙර නැඹුරුවේදී බාහිර විද්‍යුත් ක්ෂේත්‍රය මඟින් අභ්‍යන්තර විභව බාධකය දුර්වල කරන අතර, පසු නැඹුරුවේදී බාහිර ක්ෂේත්‍රය මඟින් අභ්‍යන්තර ක්ෂේත්‍රය තවදුරටත් ශක්තිමත් කර අවක්ෂේප කලාපය පුළුල් කරයි. බිඳවැටුම් කලාපයේදී අධික විද්‍යුත් ක්ෂේත්‍රය නිසා සහසංයුජ බන්ධන විශාල වශයෙන් බිඳී වාහක වැල නොකැඩී ගලා යයි.`,
+        howToThink: `*   පරිපථ විශ්ලේෂණයේදී පරමාදර්ශී දියෝඩයක් පෙර නැඹුරුවේදී සන්නායක කම්බියක් (ප්‍රතිරෝධය $0$) ලෙසත්, පසු නැඹුරුවේදී විවෘත ස්විචයක් (ප්‍රතිරෝධය $\\infty$) ලෙසත් සලකන්න. ප්‍රායෝගික සිලිකන් දියෝඩයක් නම් පෙර නැඹුරුවේදී $0.7\\ \\text{V}$ ක විභව බැස්මක් සහිත බැටරියක් ලෙස සලකන්න.`,
+        keepInMind: `*   පසු නැඹුරුවේදී ගලා යන පසු සන්තෘප්ත ධාරාව ($I_s$) බාහිර වෝල්ටීයතාව මත නොව, සම්පූර්ණයෙන්ම උෂ්ණත්වය මත රඳා පවතින බව මතක තබා ගන්න.`,
+    },
+    {
+        sectionId: '01',
+        sectionTitle: '01 කොටස: අර්ධ සන්නායක සහ දියෝඩ (Semiconductors & Diodes)',
+        subSectionId: '★1',
+        subSectionTitle: '★ ප්‍රායෝගික පුනරීක්ෂණය: සෘජුකරණය, සුමටකරණය සහ සෙනර් නියාමනය',
+        theory: `*   **අර්ධ තරංග සෘජුකරණය (Half-Wave Rectification):** එක දියෝඩයක් පමණක් භාවිත කරයි. AC තරංගයේ ධන අර්ධ චක්‍රයේදී පමණක් නිමැවුමක් ලබා දෙයි.
+*   **සේතු පූර්ණ තරංග සෘජුකරණය (Bridge Full-Wave Rectification):** දියෝඩ 4ක් භාවිත කරමින් AC තරංගයේ සෑම අර්ධ චක්‍රයකදීම බාර ප්‍රතිරෝධය හරහා එකම දිශාවකට ධාරාව ගලා යාමට සලස්වයි.
+*   **තරංග සුමටකරණය (Smoothing Filter):** සෘජුකරණය කළ නිමැවුමෙහි පවතින සරල ධාරා තරංග ආයාම (Ripples) ඉවත් කිරීමට බාර ප්‍රතිරෝධයට ($R_L$) සමාන්තරගතව ඉහළ ධාරිතාවයකින් යුත් **ධාරිත්‍රකයක් (C)** සම්බන්ධ කරයි.
+*   **සෙනර් දියෝඩ වෝල්ටීයතා නියාමකය (Zener Diode Voltage Regulator):** සෙනර් දියෝඩ විශේෂයෙන් පසු නැඹුරු බිඳවැටුම් කලාපයේ ($V_Z$) ක්‍රියා කිරීමට සැලසුම් කර ඇත. ආදාන වෝල්ටීයතාව ($V_{in}$) හෝ බාර ප්‍රතිරෝධය ($R_L$) වෙනස් වුවද බාරය හරහා වෝල්ටීයතාව $V_Z$ අගයෙහි ස්ථාවරව තබා ගනී.
+*   **විශේෂ දියෝඩ:** LED (පෙර නැඹුරු - ආලෝකය පිට කරයි), Photodiode (පසු නැඹුරු - ආලෝක තීව්‍රතාවයට සමානුපාතිකව පසු ධාරාව වෙනස් වේ), Solar Cell (බාහිර නැඹුරුකරණයක් නැත, ආලෝකයෙන් විද්‍යුත් ශක්තිය නිපදවයි).`,
+        deepTheory: `*   සුමටකරණයේදී $R_L \\cdot C$ කාල නියතය වැඩි වන තරමට ධාරිත්‍රකය විද්‍යුත් විසර්ජනය වීමට ගන්නා කාලය වැඩි වන බැවින් රැළිති වෝල්ටීයතාව අඩු වී සුමටකරණය වඩාත් සාර්ථක වේ. සෙනර් නියාමකයේදී ශ්‍රේණිගත ප්‍රතිරෝධකය ($R_S$) මඟින් දියෝඩය ආරක්ෂා කිරීමට අමතර වෝල්ටීයතාව බිඳ දමයි. සූත්‍ර සම්බන්ධතාව: $I_S = I_Z + I_L \\implies \\frac{V_{in} - V_Z}{R_S} = I_Z + \\frac{V_Z}{R_L}$.`,
+        howToThink: `*   සෙනර් පරිපථ ගැටළු විසඳීමේදී, ප්‍රථමයෙන් සෙනර් දියෝඩය නොමැති බව සලකා බාරය හරහා වෝල්ටීයතාව (විභව බෙදුම් රීතියෙන්) සෙවිය යුතුය. එම අගය $V_Z$ ට වඩා වැඩි නම් පමණක් සෙනර් දියෝඩය බිඳවැටුම් කලාපයේ පවතින බවත්, බාර වෝල්ටීයතාව $V_Z$ වන බවත් තීරණය කරන්න.`,
+        keepInMind: `*   සේතු සෘජුකරණයකදී ඕනෑම එක් අර්ධ චක්‍රයකදී ක්‍රියාත්මක වන්නේ ශ්‍රේණිගතව පවතින දියෝඩ යුගලක් (දියෝඩ 2ක්) බැවින්, ප්‍රායෝගික දියෝඩ නම් මුළු විභව බැස්ම $2 \\times 0.7\\ \\text{V} = 1.4\\ \\text{V}$ වන බව මතක තබා ගත යුතුය.`,
+    },
+
+    // ==================== SECTION 02 ====================
+    {
+        sectionId: '02',
+        sectionTitle: '02 කොටස: බයිපෝල සන්ධි ට්‍රාන්සිස්ටර (BJT)',
+        subSectionId: '2.1',
+        subSectionTitle: '2.1 ව්‍යුහය සහ මූලික ක්‍රියාකාරීත්වය',
+        theory: `*   ට්‍රාන්සිස්ටරයක කලාප 3කි: විමෝචකය (Emitter - E), පදනම (Base - B), සහ එකතුකරන්නා (Collector - C). වර්ග දෙකකි: NPN සහ PNP.
+*   **ධාරා සම්බන්ධතාව:** $I_E = I_B + I_C$ (මෙහි $I_B \\approx 1\\% - 5\\%$ සහ $I_C \\approx 95\\% - 99\\%$).
+*   **ධාරා ලාභය ($\\beta$ හෝ $h_{FE}$):** පොදු විමෝචක වින්‍යාසයේදී නිමැවුම් ධාරාව ($I_C$) සහ ආදාන ධාරාව ($I_B$) අතර අනුපාතයයි. $\\beta = \\frac{I_C}{I_B}$.`,
+        deepTheory: `*   විමෝචකය අධික ලෙසද, එකතුකරන්නා මධ්‍යස්ථ ලෙසද, පදනම ඉතා තුනීව සහ අල්ප වශයෙන්ද මාත්‍රණය කර ඇත. ට්‍රාන්සිස්ටරයක් සාමාන්‍ය ලෙස ක්‍රියා කිරීමට විමෝචක-පදනම් සන්ධිය පෙර නැඹුරු ද, එකතුකරන්නා-පදනම් සන්ධිය පසු නැඹුරු ද විය යුතුය.`,
+        howToThink: `*   ට්‍රාන්සිස්ටරයක ධාරා සෙවීමේදී සැමවිටම මූලික ධාරා සමීකරණය ($I_E = I_B + I_C$) සහ ධාරා ලාභ සූත්‍රය ($I_C = \\beta I_B$) භාවිත කරන්න. $I_B$ ඉතා කුඩා බැවින් බොහෝ විට $I_E \\approx I_C$ ලෙස උපකල්පනය කළ හැකිය.`,
+        keepInMind: `*   ට්‍රාන්සිස්ටර සංකේතයේ ඇති ඊතල හිස සැමවිටම පිහිටන්නේ විමෝචක (E) අග්‍රයේ වන අතර, එයින් ධාරාව ගලායන සම්මත දිශාව (NPN හි බාහිරට, PNP හි අභ්‍යන්තරයට) පෙන්වන බව මතක තබා ගන්න.`,
+    },
+    {
+        sectionId: '02',
+        sectionTitle: '02 කොටස: බයිපෝල සන්ධි ට්‍රාන්සිස්ටර (BJT)',
+        subSectionId: '2.2',
+        subSectionTitle: '2.2 පොදු විමෝචක (Common Emitter) ලාක්ෂණික වක්‍ර',
+        theory: `*   **ආදාන ලාක්ෂණිකය ($I_B$ එදිරිව $V_{BE}$):** $V_{CE}$ නියතව තබා අඳින සාමාන්‍ය පෙර නැඹුරු දියෝඩ වක්‍රයකි.
+*   **නිමැවුම් ලාක්ෂණිකය ($I_C$ එදිරිව $V_{CE}$):** $I_B$ නියත අගයන් කිහිපයක තබා ප්‍රස්ථාරගත කරයි. කලාප 3කි:
+    *   **කපාහැරීම් කලාපය (Cut-off Region):** $I_B = 0$ වන විට ට්‍රාන්සිස්ටරය ක්‍රියා විරහිතය ($I_C \\approx 0$).
+    *   **ක්‍රියාකාරී කලාපය (Active Region):** $I_C = \\beta I_B$ වේ. වර්ධකයක් ලෙස ක්‍රියා කරන්නේ මෙම කලාපයේදීය.
+    *   **සන්තෘප්ත කලාපය (Saturation Region):** $V_{CE}$ අගය ඉතා කුඩා වන අතර, $I_B$ වැඩි කළද $I_C$ තවදුරටත් වැඩි නොවේ.
+*   **හුවමාරු ලාක්ෂණිකය ($I_C$ එදිරිව $I_B$):** සෘජු රේඛීය ප්‍රස්ථාරයකි, එහි බෑවුමෙන් $\\beta$ ලැබෙයි.`,
+        deepTheory: `*   සන්තෘප්ත කලාපයේදී සන්ධි දෙකම (විමෝචක-පදනම් සහ එකතුකරන්නා-පදනම්) පෙර නැඹුරු තත්ත්වයට පත් වේ. ක්‍රියාකාරී කලාපයේදී එකතුකරන්නා-පදනම් සන්ධිය පසු නැඹුරු වන බැවින් එකතුකරන්නා ධාරාව $V_{CE}$ මත රඳා නොපවතින තරම්ය.`,
+        howToThink: `*   නිමැවුම් ලාක්ෂණික ප්‍රස්තාරයක සිරස් කොටස සන්තෘප්ත කලාපය ලෙසත්, තිරස් සමාන්තර රේඛා පවතින මැද කොටස ක්‍රියාකාරී කලාපය ලෙසත්, පහළම $I_B=0$ රේඛාව කපාහැරීම් කලාපය ලෙසත් ක්ෂණිකව හඳුනාගන්න.`,
+        keepInMind: `*   ට්‍රාන්සිස්ටරය වර්ධකයක් ලෙස ක්‍රියා කිරීමට නම් එය සැමවිටම ක්‍රියාකාරී කලාපයේ පමණක් පැවතිය යුතු බව මතක තබා ගන්න.`,
+    },
+    {
+        sectionId: '02',
+        sectionTitle: '02 කොටස: බයිපෝල සන්ධි ට්‍රාන්සිස්ටර (BJT)',
+        subSectionId: '★2',
+        subSectionTitle: '★ ප්‍රායෝගික පුනරීක්ෂණය: ට්‍රාන්සිස්ටරය ස්විචයක් සහ වර්ධකයක් ලෙස',
+        theory: `*   **ට්‍රාන්සිස්ටරය ස්විචයක් ලෙස:** ට්‍රාන්සිස්ටරය Cut-off (OFF අවස්ථාව) සහ Saturation (ON අවස්ථාව) යන අන්තයන් දෙකෙහි පමණක් ක්‍රියාත්මක කරවයි.
+    *   *ස්වයංක්‍රීය අඳුරු සංවේදී ලාම්පු පරිපථය:* පදනම් පරිපථයට විභව බෙදුමක් ලෙස LDR එකක් සහ විචල්‍ය ප්‍රතිරෝධකයක් ($R_1$) ශ්‍රේණිගතව සම්බන්ධ කරයි. අඳුරේදී LDR හි ප්‍රතිරෝධය ඉහළ යයි $\\implies V_{BE} > 0.7\\ \\text{V}$ වන විට ට්‍රාන්සිස්ටරය සන්තෘප්ත වී ON වේ.
+*   **ට්‍රාන්සිස්ටරය වර්ධකයක් ලෙස:** කුඩා ප්‍රත්‍යාවර්ත ආදාන වෝල්ටීයතා සංඥාවක් ($v_{in}$) විශාල නිමැවුම් සංඥාවක් ($v_{out}$) බවට පත් කිරීමයි.
+    *   *බයස් කිරීම (Biasing):* සංඥාවක් නොමැති විට වුවද ට්‍රාන්සිස්ටරය ක්‍රියාකාරී කලාපයේ පවත්වා ගැනීමට ප්‍රතිරෝධක මඟින් නිශ්චල ලක්ෂ්‍යයක් (Q-point) ලබා දීමයි.
+    *   *ධාරිත්‍රක වල කාර්යය ($C_{in}$ සහ $C_{out}$):* අවහිරතා ධාරිත්‍රක (Coupling Capacitors) වේ. AC සංඥාවලට ගමන් කිරීමට ඉඩ දෙන අතර DC වෝල්ටීයතාව ප්‍රභව වෙත කාන්දු වීම වළකයි.`,
+        deepTheory: `*   වෝල්ටීයතා ලාභය ($A_v$): $A_v = \\frac{\\Delta V_{out}}{\\Delta V_{in}} = -\\beta \\frac{R_C}{R_{in}}$. මෙහි පවතින සෘණ (-) ලකුණෙන් අදහස් වන්නේ නිමැවුම් සංඥාව ආදාන සංඥාවට සාපේක්ෂව $180^\\circ$ ක කලාවකින් වෙනස් වන බවයි (කලා ප්‍රතිලෝමනය).`,
+        howToThink: `*   ස්විච පරිපථ ගැටළුවලදී සන්තෘප්ත අවස්ථාවේදී $V_{CE} = 0\\ \\text{V}$ ලෙස ගෙන එකතුකරන්නා උපරිම ධාරාව $I_{C,sat} = \\frac{V_{CC}}{R_C}$ සූත්‍රයෙන් සොයන්න. ඉන්පසු ට්‍රාන්සිස්ටරය සන්තෘප්ත වීමට තිබිය යුතු අවම පදනම් ධාරාව $I_{B,min} = \\frac{I_{C,sat}}{\\beta}$ මඟින් ගණනය කරන්න.`,
+        keepInMind: `*   බයස් පරිපථයේ DC වෝල්ටීයතා ගණනය කිරීම්වලට AC ආදාන සංඥාව හෝ අවහිරතා ධාරිත්‍රක හරහා පවතින කොටස් සම්බන්ධ නොවන බව මතක තබා ගන්න.`,
+    },
+
+    // ==================== SECTION 03 ====================
+    {
+        sectionId: '03',
+        sectionTitle: '03 කොටස: මෙහෙයුම් වර්ධක (Operational Amplifiers - Op-Amps)',
+        subSectionId: '3.1',
+        subSectionTitle: '3.1 පරමාදර්ශී මෙහෙයුම් වර්ධකයක ලක්ෂණ',
+        theory: `*   Op-Amp එකක් සතුව ආදාන අග්‍ර දෙකක් (ප්‍රතිලෝම අග්‍රය -, අප්‍රතිලෝම අග්‍රය +) සහ එක් නිමැවුම් අග්‍රයක් පවතී.
+*   විවෘත ලූප් වෝල්ටීයතා ලාභය ($A_{OL}$) = අසීමිතයි ($\\infty$).
+*   ආදාන සම්බාධනය ($R_{in}$) = අසීමිතයි ($\\infty$) (එබැවින් ආදාන අග්‍ර තුළට ධාරාව ගලා නොයයි $I_- = I_+ = 0$).
+*   නිමැවුම් සම්බාධනය ($R_{out}$) = ශුන්‍යයකි ($0$).
+*   කලාප පළල (Bandwidth) = අසීමිතයි ($\\infty$).`,
+        deepTheory: `*   ආදාන සම්බාධනය අසීමිත බැවින් Op-Amp එක ක්‍රියාත්මක වන විට බාහිර පරිපථයෙන් කිසිදු ධාරාවක් ආදාන අග්‍ර දෙක තුළට ඇද නොගනී. නිමැවුම් සම්බාධනය ශුන්‍ය බැවින් නිමැවුමට සම්බන්ධ කරන බාර ප්‍රතිරෝධය කුමක් වුවත් නිමැවුම් වෝල්ටීයතාව වෙනස් නොවේ.`,
+        howToThink: `*   ඕනෑම Op-Amp පරිපථ ගැටළුවක් දුටු විගස, ප්‍රතිලෝම සහ අප්‍රතිලෝම අග්‍ර දෙසට ඇතුළු වන ධාරාවන් ශුන්‍ය ($0\\ \\text{A}$) ලෙස ලකුණු කර පරිපථ විශ්ලේෂණය ආරම්භ කරන්න.`,
+        keepInMind: `*   ප්‍රායෝගිකව නිමැවුම් වෝල්ටීයතාවයට සැපයුම් වෝල්ටීයතා ($+V_{CC}$ සහ $-V_{EE}$) සීමාවන් ඉක්මවා යා නොහැකි බව (සන්තෘප්ත වන බව) සිහි තබා ගන්න.`,
+    },
+    {
+        sectionId: '03',
+        sectionTitle: '03 කොටස: මෙහෙයුම් වර්ධක (Operational Amplifiers - Op-Amps)',
+        subSectionId: '3.2',
+        subSectionTitle: '3.2 සෘණ ප්‍රතිපෝෂණය සහ ශුන්‍ය විභව සංකල්පය (Virtual Ground)',
+        theory: `*   Op-Amp හි නිමැවුමෙන් කොටසක් ප්‍රතිලෝම (-) අග්‍රයට සම්බන්ධ කිරීම සෘණ ප්‍රතිපෝෂණයයි.
+*   **ශුන්‍ය විභව සංකල්පය (Virtual Ground):** $A_{OL} = \\infty$ සහ $V_{out} = A_{OL}(V_+ - V_-)$ බැවින්, නිමැවුම සන්තෘප්ත නොවී පවතින ඕනෑම අවස්ථාවක $V_+ \\approx V_-$ විය යුතුය. එනම්, එක් අග්‍රයක විභවය අනෙක් අග්‍රයේ විභවයට ස්වයංක්‍රීයව සමාන වේ.`,
+        deepTheory: `*   සෘණ ප්‍රතිපෝෂණය මඟින් පරිපථයේ ස්ථායීතාව වැඩි වන අතර ලාභය පාලනය කළ හැකි අගයකට (සංවෘත ලූප් ලාභය) පත් වේ.`,
+        howToThink: `*   අප්‍රතිලෝම අග්‍රය (+) භූගත කර ($0\\ \\text{V}$) ඇත්නම් සහ සෘණ ප්‍රතිපෝෂණයක් පවතී නම්, ශුන්‍ය විභව සංකල්පය අනුව ප්‍රතිලෝම අග්‍රයේ (-) විභවයද ක්ෂණිකව $0\\ \\text{V}$ (Virtual Ground) ලෙස ගන්න.`,
+        keepInMind: `*   ශුන්‍ය විභව සංකල්පය වලංගු වන්නේ සෘණ ප්‍රතිපෝෂණයක් පවතින විට සහ නිමැවුම සන්තෘප්ත වී නොමැති විට පමණක් බව මතක තබා ගන්න.`,
+    },
+    {
+        sectionId: '03',
+        sectionTitle: '03 කොටස: මෙහෙයුම් වර්ධක (Operational Amplifiers - Op-Amps)',
+        subSectionId: '3.3',
+        subSectionTitle: '3.3 මූලික වින්‍යාසයන්',
+        theory: `*   **ප්‍රතිලෝම වර්ධකය (Inverting Amplifier):** සංඥාව සෘණ (-) අග්‍රයට දෙනු ලැබේ. වෝල්ටීයතා ලාභය: $A_v = \\frac{V_{out}}{V_{in}} = -\\frac{R_f}{R_{in}}$.
+*   **අප්‍රතිලෝම වර්ධකය (Non-Inverting Amplifier):** සංඥාව ධන (+) අග්‍රයට දෙනු ලැබේ. මෙහිදී නිමැවුම සහ ආදානය එකම කලාවේ පවතී. වෝල්ටීයතා ලාභය: $A_v = \\frac{V_{out}}{V_{in}} = 1 + \\frac{R_f}{R_1}$.`,
+        deepTheory: `*   ප්‍රතිලෝම වර්ධකයේ පවතින සෘණ ලකුණෙන් කලා ප්‍රතිලෝමනය ($180^\\circ$ කලා වෙනස) පෙන්වයි. අප්‍රතිලෝම වර්ධකයේ ලාභය සැමවිටම $1$ ට වඩා වැඩි ධන අගයකි.`,
+        howToThink: `*   ආදාන සංඥාව සම්බන්ධ කර ඇත්තේ කුමන අග්‍රයටදැයි බලා, අදාළ ලාභ සූත්‍රය ඍජුවම යොදා නිමැවුම් වෝල්ටීයතාව ගණනය කරන්න.`,
+        keepInMind: `*   සූත්‍රවල ඇති $R_f$ යනු සැමවිටම නිමැවුමේ සිට ප්‍රතිලෝම අග්‍රයට සම්බන්ධ වන ප්‍රතිපෝෂණ ප්‍රතිරෝධකයයි.`,
+    },
+    {
+        sectionId: '03',
+        sectionTitle: '03 කොටස: මෙහෙයුම් වර්ධක (Operational Amplifiers - Op-Amps)',
+        subSectionId: '★3',
+        subSectionTitle: '★ ප්‍රායෝගික පුනරීක්ෂණය: ආකලන වර්ධකය සහ වෝල්ටීයතා අනුගාමකය',
+        theory: `*   **ආකලන වර්ධකය (Summing Amplifier):** ආදාන වෝල්ටීයතා කිහිපයක වීජීය එකතුවක් නිමැවුම ලෙස ලබා ගැනීමට ප්‍රතිලෝම වර්ධක වින්‍යාසය බහුවිධ ප්‍රතිරෝධක සහිතව ප්‍රසාරණය කරනු ලැබේ. සියලු ප්‍රතිරෝධ සමාන නම් ($R_1=R_2=R_3=R_f$): $V_{out} = -(V_1 + V_2 + V_3)$.
+*   **වෝල්ටීයතා අනුගාමකය (Voltage Follower / Buffer):** අප්‍රතිලෝම වර්ධකයේ $R_f = 0$ සහ $R_1 = \\infty$ කළ විට ලැබේ. නිමැවුම් අග්‍රය කෙළින්ම ප්‍රතිලෝම අග්‍රයට ප්‍රතිපෝෂණය කර ඇත. ලාක්ෂණික: $V_{out} = V_{in}$ (වෝල්ටීයතා ලාභය $A_v = 1$ වේ).`,
+        deepTheory: `*   ආකලන වර්ධකයේ සූත්‍රය ගොඩනැගීමට ප්‍රතිලෝම නෝඩයට Kirchhoff ධාරා නීතිය (KCL) යොදනු ලැබේ: $I_1 + I_2 + I_3 = I_f \\implies \\frac{V_1 - 0}{R_1} + \\frac{V_2 - 0}{R_2} + \\frac{V_3 - 0}{R_3} = \\frac{0 - V_{out}}{R_f}$. වෝල්ටීයතා අනුගාමකය සතුව ඉතා ඉහළ ආදාන සම්බාධනයක් සහ ඉතා අඩු නිමැවුම් සම්බාධනයක් පවතී. එම නිසා ප්‍රභවයෙන් ධාරාවක් නොඇද, පරිපථ දෙකක් අතර සංඥා හානියකින් තොරව සම්බන්ධ කිරීමට **සම්බාධන ගැළපීම (Impedance Matching)** සඳහා බෆරයක් (Buffer) ලෙස බහුලව යොදා ගැනේ.`,
+        howToThink: `*   ආකලන වර්ධකයක ප්‍රතිරෝධ අගයන් වෙනස් නම්, පොදු සූත්‍රය වන $V_{out} = -R_f \\left( \\frac{V_1}{R_1} + \\frac{V_2}{R_2} + \\frac{V_3}{R_3} \\right)$ භාවිත කරන්න.`,
+        keepInMind: `*   වෝල්ටීයතා අනුගාමකයක වෝල්ටීයතා ලාභය $1$ වුවද, එය ධාරා ලාභයක් සහ බල ලාභයක් ලබා දෙන බෆරයක් ලෙස ක්‍රියා කරන බව සිහි තබා ගන්න.`,
+    },
+
+    // ==================== SECTION 04 ====================
+    {
+        sectionId: '04',
+        sectionTitle: '04 කොටස: සංඛ්‍යාංක ඉලෙක්ට්‍රොනික විද්‍යාව සහ තර්ක ද්වාර (Logic Gates)',
+        subSectionId: '4.1',
+        subSectionTitle: '4.1 මූලික තර්ක ද්වාර (Basic Logic Gates)',
+        theory: `*   **NOT ද්වාරය (ප්‍රතිලෝමකය):** ආදානය ප්‍රතිලෝම කරයි. $Y = \\bar{A}$.
+*   **AND ද්වාරය:** සියලු ආදාන $1$ (High) නම් පමණක් නිමැවුම $1$ වේ. $Y = A \\cdot B$.
+*   **OR ද්වාරය:** අවම වශයෙන් එක් ආදානයක් හෝ $1$ නම් නිමැවුම $1$ වේ. $Y = A + B$.`,
+        deepTheory: `*   තර්ක ද්වාරවල ක්‍රියාකාරීත්වය සත්‍යතා වගු (Truth Tables) මඟින් නිරූපණය කෙරේ. ද්විමය (Binary) පද්ධතියේ පවතින තර්කන මට්ටම් වන්නේ $0$ (Low) සහ $1$ (High) පමණි.`,
+        howToThink: `*   පරිපථයක තර්ක ද්වාර කිහිපයක් ශ්‍රේණිගතව ඇති විට, එක් එක් ද්වාරයේ නිමැවුම බූලීය ප්‍රකාශනයක් ලෙස ලියා අවසාන නිමැවුම ලබා ගන්න.`,
+        keepInMind: `*   NOT ද්වාරයකට තිබිය හැක්කේ එකම එක ආදාන අග්‍රයක් පමණක් බව මතක තබා ගන්න.`,
+    },
+    {
+        sectionId: '04',
+        sectionTitle: '04 කොටස: සංඛ්‍යාංක ඉලෙක්ට්‍රොනික විද්‍යාව සහ තර්ක ද්වාර (Logic Gates)',
+        subSectionId: '4.2',
+        subSectionTitle: '4.2 සංයුක්ත තර්ක ද්වාර (Combinational Gates)',
+        theory: `*   **NAND ද්වාරය:** AND හි ප්‍රතිලෝමයයි. $Y = \\overline{A \\cdot B}$.
+*   **NOR ද්වාරය:** OR හි ප්‍රතිලෝමයයි. $Y = \\overline{A + B}$.
+*   **XOR (Exclusive OR) ද්වාරය:** ආදාන අසමාන වන විට නිමැවුම $1$ වේ. $Y = A\\bar{B} + \\bar{A}B = A \\oplus B$.
+*   **XNOR ද්වාරය:** ආදාන සමාන වන විට නිමැවුම $1$ වේ. $Y = AB + \\bar{A}\\bar{B} = \\overline{A \\oplus B}$.`,
+        deepTheory: `*   XOR ද්වාරයක ආදාන $(0,0)$ හෝ $(1,1)$ වන විට නිමැවුම $0$ වන අතර, $(0,1)$ හෝ $(1,0)$ අවස්ථාවලදී නිමැවුම $1$ වේ. XNOR ද්වාරය මෙහි ප්‍රතිලෝමය ලෙස හැසිරේ.`,
+        howToThink: `*   ප්‍රශ්නවල සත්‍යතා වගුවක් ලබා දී ද්වාරය හඳුනා ගැනීමට ඇසුවහොත්, ආදාන සමාන/අසමාන අවස්ථාවල නිමැවුම් රටාව නිරීක්ෂණය කර XOR/XNOR හඳුනාගන්න.`,
+        keepInMind: `*   NAND සහ NOR ද්වාරවල සංකේතයේ ඇති කුඩා රවුම (Bubble) මඟින් ප්‍රතිලෝම කිරීම (NOT ක්‍රියාවලිය) නිරූපණය කරන බව සිහි තබා ගන්න.`,
+    },
+    {
+        sectionId: '04',
+        sectionTitle: '04 කොටස: සංඛ්‍යාංක ඉලෙක්ට්‍රොනික විද්‍යාව සහ තර්ක ද්වාර (Logic Gates)',
+        subSectionId: '4.3',
+        subSectionTitle: "4.3 බූලීය වීජ ගණිතය සහ ඩි මෝගන් ප්‍රමේයයන් (De Morgan's Laws)",
+        theory: `*   මූලික නීති: $A + 1 = 1$, $A \\cdot 0 = 0$, $A + \\bar{A} = 1$, $A \\cdot \\bar{A} = 0$, $A + A\\cdot B = A$
+*   **ඩි මෝගන් පළමු නීතිය:** $\\overline{A + B} = \\bar{A} \\cdot \\bar{B}$
+*   **ඩි මෝගන් දෙවන නීතිය:** $\\overline{A \\cdot B} = \\bar{A} + \\bar{B}$`,
+        deepTheory: `*   ඩි මෝගන් නීතිවල සරල අදහස වන්නේ: මුළු ප්‍රතිලෝම ඉර (Bar) කඩා, මැද පවතින ලකුණ මාරු කිරීමයි (OR ලකුණ AND බවටද, AND ලකුණ OR බවටද පත් වේ).`,
+        howToThink: `*   සංකීර්ණ බූලීය ප්‍රකාශන සරල කිරීමේදී ප්‍රථමයෙන් ඩි මෝගන් නීතිය යොදා මුළු බාර් ඉවත් කර, පසුව පොදු පද වෙන් කර සරල කරන්න.`,
+        keepInMind: `*   සරල කිරීමකදී $\\overline{\\bar{A}} = A$ (ද්විත්ව ප්‍රතිලෝමනයෙන් මුල් පදයම ලැබෙන බව) සැමවිටම මතක තබා ගන්න.`,
+    },
+    {
+        sectionId: '04',
+        sectionTitle: '04 කොටස: සංඛ්‍යාංක ඉලෙක්ට්‍රොනික විද්‍යාව සහ තර්ක ද්වාර (Logic Gates)',
+        subSectionId: '★4',
+        subSectionTitle: '★ ප්‍රායෝගික පුනරීක්ෂණය: සාර්ව ද්වාර (Universal Gates) භාවිතයෙන් පරිපථ නිර්මාණය',
+        theory: `*   NAND සහ NOR ද්වාර **සාර්ව ද්වාර (Universal Gates)** ලෙස හඳුන්වනු ලබන්නේ ඒවා පමණක් යොදා ගනිමින් ඕනෑම මූලික තර්ක ද්වාරයක් (NOT, AND, OR) ප්‍රායෝගිකව නිර්මාණය කළ හැකි බැවිනි.`,
+        deepTheory: `*   **(A) NAND ද්වාර පමණක් ඇසුරින් මූලික ද්වාර සෑදීම:**
+    1. *NOT ද්වාරය:* NAND ද්වාරයක ආදාන අග්‍ර දෙකම එකට කෙටි කර තනි ආදානයක් ලෙස ලබා දීම.
+    2. *AND ද්වාරය:* ප්‍රථමයෙන් ආදාන NAND ද්වාරයකට දී, ලැබෙන නිමැවුම නැවත NOT ලෙස සකස් කළ NAND ද්වාරයක් හරහා යැවීම.
+    3. *OR ද්වාරය:* $A$ සහ $B$ ආදාන වෙන වෙනම NOT ලෙස සකස් කළ NAND ද්වාර දෙකකට දී, එම නිමැවුම් දෙක තෙවන NAND ද්වාරයකට ආදාන ලෙස දීම $\\implies Y = \\overline{\\bar{A} \\cdot \\bar{B}} = A + B$ (ඩි මෝගන් නීතිය අනුව).
+*   **(B) NOR ද්වාර පමණක් ඇසුරින් මූලික ද්වාර සෑදීම:**
+    1. *NOT ද්වාරය:* NOR ද්වාරයක ආදාන එකට කෙටි කිරීම $\\implies Y = \\overline{A + A} = \\bar{A}$.
+    2. *OR ද්වාරය:* NOR නිමැවුම නැවත NOT කළ NOR ද්වාරයකින් යැවීම $\\implies Y = \\overline{\\overline{A + B}} = A + B$.
+    3. *AND ද්වාරය:* ආදාන වෙන වෙනම NOT කළ NOR ද්වාර දෙකකට දී ලැබෙන නිමැවුම් තෙවන NOR ද්වාරයකට දීම $\\implies Y = \\overline{\\bar{A} + \\bar{B}} = A \\cdot B$.`,
+        howToThink: `*   ප්‍රශ්නයක "NAND/NOR ද්වාර පමණක් ඇසුරින් පරිපථය නිර්මාණය කරන්න" යැයි පැවසුවහොත්, මුලින්ම සාමාන්‍ය බූලීය ප්‍රකාශනය ලියා, එයට ද්විත්ව බාර් ($\\overline{\\overline{Y}}$) යොදා ඩි මෝගන් නීතිය මඟින් ලකුණු මාරු කර පරිපථය අඳින්න.`,
+        keepInMind: `*   සාර්ව ද්වාර පරිපථ ඇඳීමේදී, වෙනත් කිසිදු වර්ගයක ද්වාරයක් (NOT ද්වාර පවා) භාවිත නොකර, සියල්ලම අදාළ සාර්ව ද්වාරයෙන්ම පමණක් ඇඳීමට වගබලා ගත යුතුය.`,
+    },
+];
+
+// =============================================
+// APP STATE
+// =============================================
+let currentSubSectionId = '1.1';
+let allCardsFlipped = false;
+let flippedCards = new Set();
+
+// =============================================
+// CARD DEFINITIONS
+// =============================================
+const CARD_TYPES = [
+    { key: 'theory',     cssClass: 'ct-theory', icon: '📖', label: 'Theory',       backLabel: 'THEORY' },
+    { key: 'deepTheory', cssClass: 'ct-deep',   icon: '🔬', label: 'Deep Theory',  backLabel: 'DEEP THEORY' },
+    { key: 'howToThink', cssClass: 'ct-think',  icon: '💡', label: 'How to Think', backLabel: 'HOW TO THINK' },
+    { key: 'keepInMind', cssClass: 'ct-keep',   icon: '🧠', label: 'Keep in Mind', backLabel: 'KEEP IN MIND' },
+];
+
+// =============================================
+// BUILD SIDEBAR
+// =============================================
+function buildSidebar() {
+    const sections = {};
+    flashcardData.forEach(item => {
+        if (!sections[item.sectionId]) {
+            sections[item.sectionId] = { sectionTitle: item.sectionTitle, items: [] };
+        }
+        sections[item.sectionId].items.push({
+            subSectionId: item.subSectionId,
+            subSectionTitle: item.subSectionTitle,
+        });
+    });
+
+    let html = '';
+    Object.keys(sections).forEach(sid => {
+        const sec = sections[sid];
+        const label = sec.sectionTitle.split('(')[0].replace(/^\d+\s*කොටස:\s*/, '').trim();
+        html += `
+        <div class="nav-section">
+            <div class="nav-section-label">
+                <span style="background:linear-gradient(90deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:0.58rem;">
+                    ${sid} කොටස
+                </span>
+            </div>
+            ${sec.items.map(item => {
+                const displayId = item.subSectionId.startsWith('★') ? '★' : item.subSectionId;
+                const rawTitle = item.subSectionTitle.replace(/^[\d.]+\s*/, '').replace(/^★\s*/, '').replace(/^\(.*?\)\s*/, '');
+                return `
+                <div class="nav-item ${item.subSectionId === currentSubSectionId ? 'active' : ''}"
+                     data-id="${item.subSectionId}"
+                     onclick="selectSubSection('${item.subSectionId}')">
+                    <span class="nav-item-id">${displayId}</span>
+                    <span class="nav-item-text">${rawTitle}</span>
+                </div>`;
+            }).join('')}
+        </div>`;
+    });
+
+    document.getElementById('sidebarNav').innerHTML = html;
+}
+
+// =============================================
+// SELECT SUB-SECTION
+// =============================================
+function selectSubSection(subSectionId) {
+    currentSubSectionId = subSectionId;
+    allCardsFlipped = false;
+    flippedCards.clear();
+
+    // Update sidebar active
+    document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === subSectionId);
+    });
+
+    const data = flashcardData.find(d => d.subSectionId === subSectionId);
+    if (!data) return;
+
+    // Update header
+    document.getElementById('mainSectionTitle').textContent = data.sectionTitle;
+    document.getElementById('subBadgeText').textContent = data.subSectionTitle;
+
+    // Update eyebrow
+    const idx = flashcardData.findIndex(d => d.subSectionId === subSectionId);
+    document.getElementById('sectionEyebrow').textContent =
+        `Unit 09 · ${idx + 1} / ${flashcardData.length}`;
+
+    // Update progress
+    updateProgress(idx);
+
+    // Render cards
+    renderCards(data);
+
+    // Update flip button state
+    document.getElementById('flipAllBtn').classList.remove('all-flipped');
+    document.getElementById('flipAllBtn').innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4"/>
+        </svg>
+        Flip All Cards`;
+
+    // Close sidebar on mobile
+    closeSidebar();
+
+    // MathJax
+    setTimeout(() => {
+        if (window.MathJax?.typesetPromise) {
+            MathJax.typesetPromise([document.getElementById('flashcardGrid')]).catch(console.log);
+        }
+    }, 200);
+
+    if (window.innerWidth < 769) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function updateProgress(idx) {
+    const total = flashcardData.length;
+    const pct = total > 0 ? Math.round(((idx + 1) / total) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `${idx + 1} / ${total}`;
+}
+
+// =============================================
+// RENDER CARDS
+// =============================================
+function renderCards(data) {
+    const grid = document.getElementById('flashcardGrid');
+    grid.innerHTML = CARD_TYPES.map((ct, i) => `
+        <div class="card-wrap ${ct.cssClass}"
+             data-index="${i}"
+             style="animation-delay:${i * 0.07}s"
+             onclick="flipCard(this)">
+            <div class="card-inner">
+                <div class="card-face card-front">
+                    <div class="card-icon-wrap">${ct.icon}</div>
+                    <div class="card-label">${ct.label}</div>
+                    <div class="card-subsection-tag">${data.subSectionTitle}</div>
+                    <div class="card-hint">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+                        </svg>
+                        Click to reveal
+                    </div>
+                </div>
+                <div class="card-face card-back math-content">
+                    <div class="card-back-header">
+                        <span class="card-back-icon">${ct.icon}</span>
+                        <span class="card-back-title">${ct.backLabel}</span>
+                    </div>
+                    <div class="card-back-content">
+                        ${formatContent(data[ct.key])}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// =============================================
+// FORMAT CONTENT
+// =============================================
+function formatContent(text) {
+    if (!text) return '';
+    const lines = text.split('\n');
+    let html = '';
+    let inList = false;
+
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+            if (inList) { html += '</ul>'; inList = false; }
+            return;
+        }
+        if (trimmed.startsWith('* ') || trimmed.startsWith('*   ')) {
+            if (!inList) { html += '<ul>'; inList = true; }
+            const content = trimmed.replace(/^\*\s+/, '');
+            html += `<li>${processInline(content)}</li>`;
+        } else if (trimmed.match(/^\d+\.\s/)) {
+            if (inList) { html += '</ul>'; inList = false; }
+            const content = trimmed.replace(/^\d+\.\s*/, '');
+            const num = trimmed.match(/^\d+/)[0];
+            html += `<p style="padding-left:1rem;margin-bottom:4px;"><strong style="color:var(--text-muted);font-size:0.75rem;">${num}.</strong> ${processInline(content)}</p>`;
+        } else {
+            if (inList) { html += '</ul>'; inList = false; }
+            html += `<p style="margin-bottom:4px;">${processInline(trimmed)}</p>`;
+        }
+    });
+
+    if (inList) html += '</ul>';
+    return html;
+}
+
+function processInline(text) {
+    return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+               .replace(/\*([^*]+)\*/g, '<em style="color:#94a3b8;font-style:italic;">$1</em>');
+}
+
+// =============================================
+// FLIP CARD
+// =============================================
+function flipCard(el) {
+    el.classList.toggle('flipped');
+    const idx = parseInt(el.dataset.index);
+    if (el.classList.contains('flipped')) {
+        flippedCards.add(idx);
+        if (window.MathJax?.typesetPromise) {
+            setTimeout(() => MathJax.typesetPromise([el.querySelector('.card-back')]).catch(console.log), 100);
+        }
+    } else {
+        flippedCards.delete(idx);
+    }
+}
+
+function toggleAllCards() {
+    allCardsFlipped = !allCardsFlipped;
+    const cards = document.querySelectorAll('.card-wrap');
+    cards.forEach((c, i) => {
+        c.classList.toggle('flipped', allCardsFlipped);
+        if (allCardsFlipped) flippedCards.add(i); else flippedCards.delete(i);
+    });
+
+    const btn = document.getElementById('flipAllBtn');
+    if (allCardsFlipped) {
+        btn.classList.add('all-flipped');
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4"/></svg> Show Fronts`;
+        if (window.MathJax?.typesetPromise) {
+            setTimeout(() => MathJax.typesetPromise([document.getElementById('flashcardGrid')]).catch(console.log), 300);
+        }
+    } else {
+        btn.classList.remove('all-flipped');
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4"/></svg> Flip All Cards`;
+    }
+}
+
+// =============================================
+// SIDEBAR TOGGLE
+// =============================================
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    if (sb.classList.contains('open')) closeSidebar();
+    else openSidebar();
+}
+function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    const ov = document.getElementById('overlay');
+    ov.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('visible');
+    document.body.style.overflow = '';
+}
+
+// =============================================
+// KEYBOARD
+// =============================================
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSidebar();
+    if (e.key === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey && document.activeElement === document.body) {
+        e.preventDefault();
+        toggleAllCards();
+    }
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !e.ctrlKey) {
+        e.preventDefault();
+        const allIds = flashcardData.map(d => d.subSectionId);
+        const ci = allIds.indexOf(currentSubSectionId);
+        const ni = Math.max(0, Math.min(allIds.length - 1, ci + (e.key === 'ArrowDown' ? 1 : -1)));
+        if (ni !== ci) {
+            selectSubSection(allIds[ni]);
+            const navEl = document.querySelector(`.nav-item[data-id="${allIds[ni]}"]`);
+            if (navEl) navEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+});
+
+// Resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        if (window.innerWidth >= 769) closeSidebar();
+    }, 200);
+});
+
+// =============================================
+// INIT
+// =============================================
+function init() {
+    buildSidebar();
+    selectSubSection(flashcardData[0].subSectionId);
+}
+
+window.addEventListener('load', () => setTimeout(init, 100));
+</script>
+</body>
+</html>

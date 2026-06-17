@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Pattern Memory | K3nfold</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(145deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #f0f0f0;
+        }
+        #app {
+            width: 100%;
+            max-width: 650px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 40px;
+            padding: 30px 20px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h1, h2, h3 { text-align: center; font-weight: 600; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(to right, #ffd86f, #fc6c8c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .subtitle { text-align: center; color: #cdd6f4; margin-bottom: 20px; font-size: 0.9rem; }
+        .screen { display: none; opacity: 0; transition: opacity 0.3s; }
+        .screen.active { display: block; opacity: 1; }
+        .info-box {
+            background: rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 16px;
+            margin: 15px 0;
+            color: #f5e6d3;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .level-grid { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+        .level-btn {
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.25);
+            border-radius: 24px;
+            padding: 14px 18px;
+            text-align: left;
+            color: #e6e6fa;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.95rem;
+        }
+        .level-btn:hover { background: rgba(255,255,255,0.15); border-color: #fbc2eb; }
+        .level-btn.selected { background: rgba(255,215,0,0.18); border-color: #ffd86f; box-shadow: 0 0 20px rgba(255,215,0,0.5); }
+        .level-num {
+            font-size: 1.8rem; font-weight: 700; min-width: 40px; text-align: center;
+            background: rgba(0,0,0,0.3); border-radius: 16px; padding: 5px 0; color: #ffd86f;
+        }
+        .btn {
+            background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.35);
+            border-radius: 50px; padding: 14px 28px; font-size: 1rem; font-weight: 600;
+            color: #fff; cursor: pointer; transition: 0.2s; backdrop-filter: blur(8px);
+            display: inline-flex; align-items: center; gap: 6px; margin: 5px;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.3);
+        }
+        .btn:active { transform: scale(0.94); }
+        .btn:disabled { opacity: 0.35; pointer-events: none; }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            border: none; color: #1a1a2e; font-weight: 700;
+        }
+        .game-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 500; }
+        .grid-container { display: grid; gap: 8px; justify-content: center; margin: 15px auto; transition: all 0.3s; }
+        .grid-cell {
+            aspect-ratio: 1; background: rgba(255,255,255,0.1); border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: background 0.15s;
+        }
+        .grid-cell.highlight { background: #ffd86f !important; box-shadow: 0 0 12px #ffd86f; }
+        .grid-cell.selected { background: #69f0ae !important; border-color: #69f0ae; }
+        .grid-cell.wrong-selected { background: #ff5252 !important; border-color: #ff5252; }
+        .grid-cell.correct-missed { background: rgba(255, 255, 0, 0.3); border-color: #ffd86f; }
+        .timer-bar { width: 100%; height: 10px; background: rgba(0,0,0,0.5); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .timer-fill { height: 100%; background: #4caf50; width: 100%; transition: width 0.1s linear; }
+        .result-box { background: rgba(255,255,255,0.06); border-radius: 24px; padding: 20px; margin: 15px 0; }
+        .explanation-box {
+            background: rgba(255,255,255,0.06); border-radius: 24px; padding: 18px; margin: 15px 0;
+            color: #f5e6d3; font-size: 0.95rem; line-height: 1.7;
+        }
+        .footer-note { text-align: center; margin-top: 20px; font-size: 0.8rem; color: #aaa; }
+        .footer-note a { color: #ffd86f; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <h1>🧠 Pattern Memory</h1>
+        <div class="subtitle">දෘශ්‍ය ක්‍රියාකාරී මතක පුහුණුව (Corsi‑style)</div>
+        <div class="info-box">
+            <strong style="color:#ffd86f;">📋 ක්‍රීඩාව</strong><br>
+            • තිරයේ දැලිසක කහ පැහැයෙන් කොටු කිහිපයක් දැල්වේ.<br>
+            • ඒවා අතුරුදහන් වූ පසු ඔබ එම කොටු නිවැරදිව තෝරන්න.<br>
+            • සෑම ප්‍රශ්නයකදීම දැලිස් ප්‍රමාණය හා ඉලක්ක ගණන වැඩිවේ.<br>
+            • <strong>තත්පර 3ක් අධ්‍යයන කාලය</strong> සහ <strong>තත්පර 8ක් පිළිතුරු සැපයීමේ කාලය</strong> ඇත.
+        </div>
+        <h3 style="color:#f8e3a0;">ඔබේ ආරම්භක මට්ටම තෝරන්න</h3>
+        <div class="level-grid" id="level-grid"></div>
+        <div style="text-align:center; margin-top:15px;">
+            <button id="begin-btn" class="btn btn-primary" disabled>▶ ආරම්භ කරන්න</button>
+        </div>
+        <div class="footer-note">
+            Project by <a href="https://t.me/k3N_edu" target="_blank">K3nfold✨</a> | code by deepseek
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <span id="level-info">Level 1</span>
+            <span id="trial-info">ප්‍රශ්නය 1/20</span>
+        </div>
+        <div class="timer-bar" id="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+        <div id="grid-container" class="grid-container"></div>
+        <div style="text-align:center; margin:15px 0;">
+            <button id="submit-btn" class="btn btn-primary">✔ තහවුරු කරන්න</button>
+            <span id="restart-link" class="restart-link" style="color:#ffd86f;cursor:pointer;text-decoration:underline;margin-left:15px;">↺ නවත්වන්න</span>
+        </div>
+        <div id="feedback" style="text-align:center;font-weight:bold;min-height:24px;"></div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="screen">
+        <h2 style="color:#ffd86f;">📊 ප්‍රතිඵල</h2>
+        <div id="result-stats" class="result-box"></div>
+        <div id="explanation" class="explanation-box"></div>
+        <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+            <button id="play-again-btn" class="btn btn-primary">↻ නැවත ක්‍රීඩා කරන්න</button>
+            <button id="home-btn" class="btn">🏠 මුල් පිටුව</button>
+        </div>
+        <div class="footer-note" style="margin-top:15px;">
+            Project by <a href="https://t.me/k3N_edu" target="_blank">K3nfold✨</a> | code by deepseek
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // ---------- LEVEL DEFINITIONS ----------
+    const levels = [
+        { id:1, nameEn:"Beginner", descSi:"ආධුනික (3×3, ඉලක්ක 2)", gridRows:3, gridCols:3, startTargets:2 },
+        { id:2, nameEn:"Easy", descSi:"පහසු (4×4, ඉලක්ක 3)", gridRows:4, gridCols:4, startTargets:3 },
+        { id:3, nameEn:"Medium", descSi:"මධ්‍යම (5×5, ඉලක්ක 4)", gridRows:5, gridCols:5, startTargets:4 },
+        { id:4, nameEn:"Hard", descSi:"දුෂ්කර (6×6, ඉලක්ක 5)", gridRows:6, gridCols:6, startTargets:5 },
+        { id:5, nameEn:"Expert", descSi:"ප්‍රවීණ (7×7, ඉලක්ක 6)", gridRows:7, gridCols:7, startTargets:6 }
+    ];
+
+    const TOTAL_TRIALS = 20;
+    const STUDY_TIME_MS = 3000;
+    const RECALL_TIME_MS = 8000;
+
+    // DOM
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const levelGrid = document.getElementById('level-grid');
+    const beginBtn = document.getElementById('begin-btn');
+    const gridContainer = document.getElementById('grid-container');
+    const levelInfo = document.getElementById('level-info');
+    const trialInfo = document.getElementById('trial-info');
+    const timerBar = document.getElementById('timer-bar');
+    const timerFill = document.getElementById('timer-fill');
+    const submitBtn = document.getElementById('submit-btn');
+    const restartLink = document.getElementById('restart-link');
+    const feedbackEl = document.getElementById('feedback');
+    const resultStats = document.getElementById('result-stats');
+    const explanationBox = document.getElementById('explanation');
+    const playAgainBtn = document.getElementById('play-again-btn');
+    const homeBtn = document.getElementById('home-btn');
+
+    // State
+    let currentLevel = null;
+    let currentTrial = 0;
+    let targetCells = [];
+    let userSelected = new Set();
+    let studyTimer = null;
+    let recallTimer = null;
+    let recallStartTime = null;
+    let totalRecallMs = RECALL_TIME_MS;
+    let phase = 'study';
+    let trialResults = [];
+    let totalCorrect = 0;
+    let totalFalseAlarms = 0;
+    let gridRows, gridCols, numTargets;
+    let roundActive = false;
+    let audioCtx = null;
+
+    // ---------- AUDIO HELPERS ----------
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+    function playBeep(freq = 800, duration = 0.15, type = 'sine') {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+    function playDoubleBeep() {
+        setTimeout(() => playBeep(600, 0.12), 0);
+        setTimeout(() => playBeep(800, 0.12), 150);
+    }
+
+    // ---------- SCREEN SWITCHING ----------
+    function showScreen(screen) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        screen.classList.add('active');
+    }
+
+    function clearTimers() {
+        if (studyTimer) cancelAnimationFrame(studyTimer);
+        if (recallTimer) cancelAnimationFrame(recallTimer);
+        studyTimer = null;
+        recallTimer = null;
+    }
+
+    // Build level buttons
+    levels.forEach((lv, idx) => {
+        const btn = document.createElement('div');
+        btn.className = 'level-btn';
+        btn.innerHTML = `<div class="level-num">${lv.id}</div><div class="level-desc">${lv.descSi} <small>${lv.nameEn}</small></div>`;
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            currentLevel = lv;
+            beginBtn.disabled = false;
+        });
+        levelGrid.appendChild(btn);
+    });
+    // default select level 3
+    levelGrid.children[2].classList.add('selected');
+    currentLevel = levels[2];
+    beginBtn.disabled = false;
+
+    function buildGrid(rows, cols) {
+        gridContainer.innerHTML = '';
+        gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        const totalCells = rows * cols;
+        for (let i = 0; i < totalCells; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.index = i;
+            cell.addEventListener('click', () => {
+                if (phase !== 'recall') return;
+                if (userSelected.has(i)) {
+                    userSelected.delete(i);
+                    cell.classList.remove('selected');
+                } else {
+                    userSelected.add(i);
+                    cell.classList.add('selected');
+                }
+            });
+            gridContainer.appendChild(cell);
+        }
+    }
+
+    function generateTargets(rows, cols, n) {
+        const total = rows * cols;
+        const indices = new Set();
+        while (indices.size < n) {
+            indices.add(Math.floor(Math.random() * total));
+        }
+        return [...indices];
+    }
+
+    function startTrial() {
+        if (currentTrial >= TOTAL_TRIALS) { endRound(); return; }
+        const baseRows = currentLevel.gridRows;
+        const baseCols = currentLevel.gridCols;
+        const baseTargets = currentLevel.startTargets;
+        const gridStep = Math.floor(currentTrial / 5);
+        const targetStep = Math.floor(currentTrial / 3);
+        gridRows = Math.min(10, baseRows + gridStep);
+        gridCols = Math.min(10, baseCols + gridStep);
+        numTargets = Math.min(gridRows * gridCols - 1, baseTargets + targetStep);
+        numTargets = Math.max(2, numTargets);
+
+        buildGrid(gridRows, gridCols);
+        targetCells = generateTargets(gridRows, gridCols, numTargets);
+        userSelected.clear();
+
+        const cells = document.querySelectorAll('.grid-cell');
+        targetCells.forEach(idx => cells[idx].classList.add('highlight'));
+        phase = 'study';
+        submitBtn.style.display = 'none';
+        feedbackEl.textContent = 'කොටු මතක තබා ගන්න...';
+        levelInfo.textContent = `Level ${currentLevel.id} (${gridRows}×${gridCols}, ඉලක්ක ${numTargets})`;
+        trialInfo.textContent = `ප්‍රශ්නය ${currentTrial+1}/${TOTAL_TRIALS}`;
+
+        startTimer(STUDY_TIME_MS, () => {
+            // end of study phase
+            cells.forEach(c => c.classList.remove('highlight'));
+            phase = 'recall';
+            submitBtn.style.display = 'inline-block';
+            feedbackEl.textContent = 'දැන් ඔබට මතක ඇති කොටු තෝරන්න (තත්පර 8)';
+            playDoubleBeep(); // sound for transition
+            startRecallTimer(RECALL_TIME_MS);
+        });
+    }
+
+    function startTimer(duration, callback) {
+        const start = performance.now();
+        function update(now) {
+            const elapsed = now - start;
+            const remaining = Math.max(0, duration - elapsed);
+            const percent = (remaining / duration) * 100;
+            timerFill.style.width = percent + '%';
+            if (percent < 30) timerFill.style.background = '#f44336';
+            else if (percent < 60) timerFill.style.background = '#ffb74d';
+            else timerFill.style.background = '#4caf50';
+            if (remaining <= 0) {
+                callback();
+                return;
+            }
+            studyTimer = requestAnimationFrame(update);
+        }
+        studyTimer = requestAnimationFrame(update);
+    }
+
+    function startRecallTimer(durationMs) {
+        totalRecallMs = durationMs;
+        recallStartTime = performance.now();
+        let warningPlayed = false;
+        function update(now) {
+            const elapsed = now - recallStartTime;
+            const remaining = Math.max(0, totalRecallMs - elapsed);
+            const percent = (remaining / totalRecallMs) * 100;
+            timerFill.style.width = percent + '%';
+            if (percent < 30) timerFill.style.background = '#f44336';
+            else if (percent < 60) timerFill.style.background = '#ffb74d';
+            else timerFill.style.background = '#4caf50';
+            // warning sound at 5 seconds left
+            if (remaining < 5000 && !warningPlayed) {
+                warningPlayed = true;
+                playBeep(400, 0.25, 'square');
+            }
+            if (remaining <= 0) {
+                autoSubmit();
+                return;
+            }
+            recallTimer = requestAnimationFrame(update);
+        }
+        recallTimer = requestAnimationFrame(update);
+    }
+
+    function autoSubmit() {
+        if (phase !== 'recall') return;
+        evaluateTrial();
+    }
+
+    function evaluateTrial() {
+        clearTimers();
+        phase = 'feedback';
+        const cells = document.querySelectorAll('.grid-cell');
+        let correct = 0;
+        targetCells.forEach(idx => {
+            if (userSelected.has(idx)) {
+                correct++;
+                cells[idx].classList.add('selected');
+            } else {
+                cells[idx].classList.add('correct-missed');
+            }
+        });
+        let falseAlarms = 0;
+        userSelected.forEach(idx => {
+            if (!targetCells.includes(idx)) {
+                falseAlarms++;
+                cells[idx].classList.add('wrong-selected');
+            }
+        });
+        const missed = targetCells.length - correct;
+        totalCorrect += correct;
+        totalFalseAlarms += falseAlarms;
+        trialResults.push({ correct, falseAlarms, missed, totalTargets: targetCells.length });
+
+        feedbackEl.textContent = `✔ නිවැරදි: ${correct}/${targetCells.length} | ✗ වැරදි තේරීම්: ${falseAlarms}`;
+        setTimeout(() => {
+            currentTrial++;
+            if (currentTrial < TOTAL_TRIALS) startTrial();
+            else endRound();
+        }, 2000);
+    }
+
+    submitBtn.addEventListener('click', () => {
+        if (phase === 'recall') {
+            clearTimers();
+            evaluateTrial();
+        }
+    });
+
+    function getBrainExplanation(level, percentile) {
+        const base = `🧠 <strong>මෙම අභ්‍යාසයෙන් ඔබේ මොළය වැඩිදියුණු වන ආකාරය</strong><br>`;
+        const d1 = `දෘශ්‍ය-අවකාශීය ක්‍රියාකාරී මතකය (visuospatial working memory) පුහුණු කිරීමෙන් dorsolateral prefrontal cortex (DLPFC) සහ posterior parietal cortex සක්‍රීය වේ. නැවත නැවත මෙම කාර්යයේ යෙදීමෙන් ස්නායු ප්ලාස්ටිසිටිතාවය (neuroplasticity) ඇති කරමින් මෙම ප්‍රදේශ අතර සම්බන්ධතා ශක්තිමත් කරයි.`;
+        const d2 = `Corsi block-tapping test හා සමාන මෙම ක්‍රියාකාරකම්, වැඩ කරන මතක ධාරිතාව (working memory capacity) වැඩි කරන බව පර්යේෂණ මගින් පෙන්වා දී ඇත (Kessels et al., 2000).`;
+        const d3 = `ඔබගේ කාර්ය සාධනය සාමාන්‍ය වැඩිහිටියන්ගෙන් ${percentile}% ට වඩා ඉහළ මට්ටමක පවතී.`;
+        return base + d1 + ' ' + d2 + ' ' + d3;
+    }
+
+    function endRound() {
+        clearTimers();
+        roundActive = false;
+        const avgCorrect = totalCorrect / TOTAL_TRIALS;
+        const avgFalseAlarms = totalFalseAlarms / TOTAL_TRIALS;
+        const totalTargetsSum = trialResults.reduce((s, r) => s + r.totalTargets, 0);
+        const overallAccuracy = totalCorrect / totalTargetsSum;
+        let percentile = Math.min(100, Math.round(overallAccuracy * 100));
+        if (percentile < 50) percentile = Math.max(5, percentile); // avoid negative impression
+
+        let benchmarkText = '';
+        if (percentile >= 90) benchmarkText = 'ඉහළම 10% – විශිෂ්ට දෘශ්‍ය මතක ධාරිතාව';
+        else if (percentile >= 70) benchmarkText = 'සාමාන්‍යයට වඩා ඉහළ (ඉහළ 30%)';
+        else if (percentile >= 40) benchmarkText = 'සාමාන්‍ය වැඩිහිටි මට්ටම';
+        else benchmarkText = 'තවදුරටත් පුහුණුව අවශ්‍යයි';
+
+        resultStats.innerHTML = `
+            <p><strong>මට්ටම:</strong> ${currentLevel.descSi} (${currentLevel.nameEn})</p>
+            <p>📊 සාමාන්‍ය නිවැරදි කොටු: ${avgCorrect.toFixed(1)} / ඉලක්ක</p>
+            <p>⚠️ සාමාන්‍ය වැරදි තේරීම්: ${avgFalseAlarms.toFixed(1)}</p>
+            <p>🧠 Corsi span සාපේක්ෂ ප්‍රතිශතය: <strong>${percentile}%</strong></p>
+            <p style="color:#ffd86f;">📖 ${benchmarkText}</p>
+        `;
+        explanationBox.innerHTML = getBrainExplanation(currentLevel, percentile);
+        showScreen(resultScreen);
+    }
+
+    function startGame() {
+        currentTrial = 0;
+        totalCorrect = 0;
+        totalFalseAlarms = 0;
+        trialResults = [];
+        roundActive = true;
+        showScreen(gameScreen);
+        startTrial();
+    }
+
+    beginBtn.addEventListener('click', startGame);
+    restartLink.addEventListener('click', () => { clearTimers(); showScreen(startScreen); });
+    playAgainBtn.addEventListener('click', startGame);
+    homeBtn.addEventListener('click', () => showScreen(startScreen));
+
+    showScreen(startScreen);
+})();
+</script>
+</body>
+</html>

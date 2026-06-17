@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="si" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>  — Electrostatics Universe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ... (complete CSS as in original, no changes needed) ... */
+:root[data-theme="dark"] {
+  --bg: #070a0f;
+  --bg2: #0d1117;
+  --bg3: #111827;
+  --surface: rgba(255,255,255,0.04);
+  --surface2: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0f4ff;
+  --text2: #a0aec0;
+  --text3: #6b7a99;
+  --accent: #4fc3f7;
+  --accent2: #81d4fa;
+  --gold: #ffd54f;
+  --green: #69f0ae;
+  --pink: #f48fb1;
+  --purple: #ce93d8;
+  --orange: #ffb74d;
+  --glow: rgba(79,195,247,0.15);
+  --glow2: rgba(255,213,79,0.12);
+}
+:root[data-theme="light"] {
+  --bg: #f0f4ff;
+  --bg2: #e8edf8;
+  --bg3: #dce4f5;
+  --surface: rgba(255,255,255,0.7);
+  --surface2: rgba(255,255,255,0.9);
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+  --text: #0f172a;
+  --text2: #374151;
+  --text3: #6b7280;
+  --accent: #0284c7;
+  --accent2: #0ea5e9;
+  --gold: #b45309;
+  --green: #059669;
+  --pink: #be185d;
+  --purple: #7c3aed;
+  --orange: #d97706;
+  --glow: rgba(2,132,199,0.1);
+  --glow2: rgba(180,83,9,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+  transition: background 0.4s, color 0.4s;
+}
+#particles-canvas {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+  opacity: 0.4;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+.site-wrapper { position: relative; z-index: 1; }
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 60px;
+  background: rgba(7,10,15,0.75);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.4s;
+}
+[data-theme="light"] nav { background: rgba(240,244,255,0.8); }
+.nav-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-brand .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+.nav-links { display: flex; gap: 1.5rem; align-items: center; }
+.nav-links a {
+  font-size: 0.8rem; font-weight: 500;
+  color: var(--text2); text-decoration: none;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+.theme-toggle {
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); padding: 6px 12px; border-radius: 20px;
+  cursor: pointer; font-size: 0.75rem; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s; font-weight: 500;
+}
+.theme-toggle:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 80px 2rem 4rem;
+  position: relative;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  padding: 6px 16px; border-radius: 99px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 2rem;
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.5rem;
+}
+.hero h1 .line1 { display: block; }
+.hero h1 .line2 {
+  display: block;
+  background: linear-gradient(135deg, var(--accent), var(--gold), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  color: var(--text2); max-width: 560px;
+  line-height: 1.8; margin-bottom: 2.5rem;
+}
+.hero-pills { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 3rem; }
+.pill {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  padding: 6px 16px; border-radius: 99px;
+  font-size: 0.78rem; color: var(--text2);
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.2s;
+}
+.pill:hover { border-color: var(--accent); color: var(--accent); }
+.hero-scroll {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--text3); font-size: 0.75rem; letter-spacing: 0.1em;
+}
+.scroll-line {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+  animation: scroll-anim 1.5s ease-in-out infinite;
+}
+@keyframes scroll-anim { 0%,100%{opacity:0.3;transform:scaleY(0.5)} 50%{opacity:1;transform:scaleY(1)} }
+.section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 6rem 2rem;
+}
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 0.75rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800; letter-spacing: -0.03em;
+  line-height: 1.1; margin-bottom: 1rem;
+}
+.section-sub { color: var(--text2); max-width: 600px; line-height: 1.8; margin-bottom: 3rem; }
+.theory-grid { display: grid; gap: 2px; }
+.theory-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  transition: all 0.3s;
+  margin-bottom: 2px;
+}
+.theory-card:hover { border-color: var(--border2); }
+.theory-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.5rem 2rem; cursor: pointer;
+  transition: background 0.2s;
+  gap: 1rem;
+}
+.theory-header:hover { background: var(--surface2); }
+.theory-header-left { display: flex; align-items: flex-start; gap: 1.25rem; }
+.theory-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; font-weight: 500;
+  color: var(--accent); letter-spacing: 0.1em;
+  background: var(--glow); border: 1px solid rgba(79,195,247,0.2);
+  padding: 4px 10px; border-radius: 6px; flex-shrink: 0; margin-top: 2px;
+}
+.theory-title-block h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem; font-weight: 700;
+  letter-spacing: -0.02em; line-height: 1.3;
+}
+.theory-title-block span {
+  font-size: 0.78rem; color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+}
+.theory-chevron {
+  color: var(--text3); flex-shrink: 0;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  font-size: 1rem;
+}
+.theory-card.open .theory-chevron { transform: rotate(180deg); color: var(--accent); }
+.theory-body {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
+  opacity: 0;
+}
+.theory-card.open .theory-body { max-height: 12000px; opacity: 1; }
+.theory-content {
+  padding: 0 2rem 2rem;
+  border-top: 1px solid var(--border);
+}
+.content-block { margin: 1.5rem 0; }
+.content-block h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.85rem; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 0.75rem;
+}
+.content-block p { color: var(--text2); line-height: 1.85; font-size: 0.95rem; }
+.formula-box {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px; padding: 1.25rem 1.5rem;
+  margin: 1rem 0; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem; text-align: center; overflow-x: auto;
+}
+.insight-box {
+  background: linear-gradient(135deg, rgba(79,195,247,0.06), rgba(255,213,79,0.04));
+  border: 1px solid rgba(79,195,247,0.2);
+  border-radius: 12px; padding: 1.25rem 1.5rem; margin: 1rem 0;
+}
+.insight-box .insight-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.5rem;
+}
+.insight-box p { color: var(--text2); font-size: 0.9rem; line-height: 1.8; }
+.feel-box {
+  background: linear-gradient(135deg, rgba(244,143,177,0.06), rgba(206,147,216,0.04));
+  border: 1px solid rgba(244,143,177,0.2);
+  border-radius: 12px; padding: 1.5rem; margin: 1rem 0;
+}
+.feel-box .feel-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--pink); margin-bottom: 0.75rem;
+}
+.feel-box p { color: var(--text2); font-size: 0.92rem; line-height: 1.9; font-style: italic; }
+.bullet-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+.bullet-list li {
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  color: var(--text2); font-size: 0.92rem; line-height: 1.8;
+  padding: 0.35rem 0;
+}
+.bullet-list li::before {
+  content: '→'; color: var(--accent); flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tabs { display: flex; gap: 4px; margin-bottom: 1rem; flex-wrap: wrap; }
+.tab-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text2); padding: 6px 16px; border-radius: 8px;
+  font-size: 0.78rem; font-weight: 500; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.tab-btn.active, .tab-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.graphs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem; }
+.graph-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 1.75rem;
+  transition: all 0.3s;
+}
+.graph-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.graph-card h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.graph-card p { color: var(--text3); font-size: 0.8rem; margin-bottom: 1.25rem; line-height: 1.6; }
+.chart-wrapper { position: relative; height: 220px; }
+.demo-section {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 24px; padding: 2rem; margin: 2rem 0;
+}
+.demo-section h3 {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1.2rem; margin-bottom: 0.5rem;
+}
+.demo-section p { color: var(--text2); font-size: 0.88rem; margin-bottom: 1.5rem; }
+canvas.demo-canvas {
+  width: 100%; max-width: 600px;
+  height: 280px; display: block; margin: 0 auto;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.controls { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; align-items: center; }
+.ctrl-group { display: flex; flex-direction: column; gap: 4px; }
+.ctrl-group label { font-size: 0.75rem; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 140px; height: 4px;
+  background: var(--border2); border-radius: 2px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--accent); cursor: pointer;
+}
+.ctrl-val { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--accent); }
+.rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-top: 2rem; }
+.rule-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.5rem;
+  transition: all 0.3s;
+  position: relative; overflow: hidden;
+}
+.rule-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  opacity: 0; transition: opacity 0.3s;
+}
+.rule-card:hover::before { opacity: 1; }
+.rule-card:hover { border-color: var(--border2); transform: translateY(-3px); }
+.rule-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+.rule-card h4 {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.95rem; margin-bottom: 0.5rem;
+}
+.rule-card p { color: var(--text3); font-size: 0.85rem; line-height: 1.7; }
+.questions-grid { display: grid; gap: 1.25rem; }
+.q-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  transition: border-color 0.3s;
+}
+.q-card:hover { border-color: var(--border2); }
+.q-header {
+  display: flex; gap: 1rem; align-items: flex-start;
+  padding: 1.5rem 1.75rem;
+}
+.q-num {
+  width: 32px; height: 32px;
+  background: var(--glow2);
+  border: 1px solid rgba(255,213,79,0.3);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; font-weight: 600; color: var(--gold);
+  flex-shrink: 0;
+}
+.q-text { color: var(--text); font-size: 0.95rem; line-height: 1.7; }
+.q-reveal-btn {
+  margin: 0 1.75rem 1.5rem;
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text2); padding: 10px 20px; border-radius: 10px;
+  font-size: 0.82rem; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.q-reveal-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+.q-reveal-btn.revealed { background: rgba(105,240,174,0.1); border-color: rgba(105,240,174,0.3); color: var(--green); cursor: default; }
+.q-answer {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.5s ease, opacity 0.4s;
+  opacity: 0;
+}
+.q-answer.open { max-height: 600px; opacity: 1; }
+.q-answer-inner {
+  margin: 0 1.75rem 1.75rem;
+  background: linear-gradient(135deg, rgba(105,240,174,0.05), rgba(79,195,247,0.04));
+  border: 1px solid rgba(105,240,174,0.2);
+  border-radius: 12px; padding: 1.25rem 1.5rem;
+}
+.q-answer-inner p, .q-answer-inner li {
+  color: var(--text2); font-size: 0.9rem; line-height: 1.85;
+}
+.ans-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--green);
+  margin-bottom: 0.75rem;
+}
+.mq-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  transition: border-color 0.3s;
+  margin-bottom: 1.25rem;
+}
+.mq-card:hover { border-color: var(--border2); }
+.mq-header { display: flex; gap: 1rem; align-items: flex-start; padding: 1.5rem 1.75rem; }
+.mq-num {
+  width: 32px; height: 32px;
+  background: rgba(255,183,77,0.1);
+  border: 1px solid rgba(255,183,77,0.3);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; font-weight: 600; color: var(--orange);
+  flex-shrink: 0;
+}
+.mq-reveal-btn {
+  margin: 0 1.75rem 1.5rem;
+  background: rgba(255,183,77,0.08); border: 1px solid rgba(255,183,77,0.25);
+  color: var(--orange); padding: 10px 20px; border-radius: 10px;
+  font-size: 0.82rem; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.mq-reveal-btn:hover { background: var(--orange); color: #000; }
+.mq-reveal-btn.revealed { background: rgba(105,240,174,0.1); border-color: rgba(105,240,174,0.3); color: var(--green); cursor: default; }
+.mq-answer {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.5s ease, opacity 0.4s;
+  opacity: 0;
+}
+.mq-answer.open { max-height: 600px; opacity: 1; }
+.mq-answer-inner {
+  margin: 0 1.75rem 1.75rem;
+  background: linear-gradient(135deg, rgba(255,183,77,0.06), rgba(79,195,247,0.04));
+  border: 1px solid rgba(255,183,77,0.2);
+  border-radius: 12px; padding: 1.25rem 1.5rem;
+}
+.mq-answer-inner p { color: var(--text2); font-size: 0.9rem; line-height: 1.85; }
+.sol-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--orange);
+  margin-bottom: 0.75rem;
+}
+.special-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+.special-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2rem;
+  position: relative; overflow: hidden;
+  transition: all 0.3s;
+}
+.special-card:hover { transform: translateY(-4px); border-color: var(--border2); }
+.special-card .accent-glow {
+  position: absolute; top: -20px; right: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  opacity: 0.15; transition: opacity 0.3s;
+}
+.special-card:hover .accent-glow { opacity: 0.25; }
+.special-card h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 0.75rem; }
+.special-card p { color: var(--text2); font-size: 0.88rem; line-height: 1.75; }
+.timeline { position: relative; padding-left: 2rem; margin-top: 2rem; }
+.timeline::before {
+  content: ''; position: absolute; left: 6px; top: 0; bottom: 0;
+  width: 1px; background: linear-gradient(to bottom, var(--accent), transparent);
+}
+.tl-item { position: relative; margin-bottom: 2.5rem; }
+.tl-dot {
+  position: absolute; left: -2rem; top: 4px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--accent);
+  transition: background 0.2s;
+}
+.tl-item:hover .tl-dot { background: var(--accent); }
+.tl-item h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.4rem; }
+.tl-item p { color: var(--text2); font-size: 0.9rem; line-height: 1.8; }
+footer {
+  text-align: center; padding: 3rem 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text3); font-size: 0.82rem;
+}
+footer strong { color: var(--text2); }
+.fade-up {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+@media (max-width: 768px) {
+  nav { padding: 0 1rem; }
+  .nav-links { display: none; }
+  .section { padding: 4rem 1.25rem; }
+  .theory-header { padding: 1.2rem 1.25rem; }
+  .theory-content { padding: 0 1.25rem 1.5rem; }
+  .graph-card { padding: 1.25rem; }
+  .q-header { padding: 1.2rem 1.25rem; }
+  .q-reveal-btn { margin: 0 1.25rem 1.25rem; }
+  .q-answer-inner { margin: 0 1.25rem 1.25rem; }
+  .mq-header { padding: 1.2rem 1.25rem; }
+  .mq-reveal-btn { margin: 0 1.25rem 1.25rem; }
+  .mq-answer-inner { margin: 0 1.25rem 1.25rem; }
+  .hero { padding: 100px 1.25rem 3rem; }
+}
+.katex-display { margin: 0.75em 0 !important; overflow-x: auto; }
+.katex { font-size: 1em; }
+</style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+
+<div class="site-wrapper">
+
+<nav>
+  <div class="nav-brand"><span class="dot"></span> ELECTROSTATICS</div>
+  <div class="nav-links">
+    <a href="#theories">සිද්ධාන්ත</a>
+    <a href="#graphs">ප්‍රස්තාර</a>
+    <a href="#special">උසස් කරුණු</a>
+    <a href="#questions">ප්‍රශ්න</a>
+    <a href="#math">ගැටළු</a>
+  </div>
+  <button class="theme-toggle" onclick="toggleTheme()">☀ / ◑</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">⚡  භෞතික විද්‍යාව A/L </div>
+  <h1><span class="line1">විද්‍යුත්</span><span class="line2">ක්ෂේත්‍ර</span></h1>
+  <p class="hero-sub">A complete, visually immersive guide to Electrostatics — from charge quantization to Faraday cages. Covering all theories from your notes, with deep explanations, real-world analogies, and interactive visualizations..</p>
+  <div class="hero-pills">
+    <span class="pill">කුලෝම් නියමය</span><span class="pill">ගවුස් ප්‍රමේයය</span><span class="pill">විද්‍යුත් විභවය</span>
+    <span class="pill">ධාරිත්‍රක</span><span class="pill">පාර විද්‍යුත</span><span class="pill">කොරෝනා විසර්ජනය</span>
+    <span class="pill">ෆැරඩේ නියමය</span><span class="pill">ආරෝපණ චාලක විද්‍යාව</span>
+  </div>
+  <div style="margin-top:2rem;padding:1rem 1.5rem;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:rgba(255,255,255,0.04)">
+    <p style="font-size:0.92rem;color:var(--text2);line-height:1.9">
+    <strong style="color:var(--accent)">Developed by K3N</strong><br>
+    Code by Claude AI, DeepSeek AI<br>
+    Developer : <a href="https://t.me/K3ndH" target="_blank" style="color:var(--accent);text-decoration:none">t.me/K3ndH</a>
+    </p>
+  </div>
+  <div class="hero-scroll"><span>SCROLL TO EXPLORE</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- THEORIES SECTION - FULLY TRANSLATED -->
+<section class="section" id="theories">
+  <div class="section-label">01 කොටස — මූලික සිද්ධාන්ත</div>
+  <h2 class="section-title fade-up">ආරෝපණයේ<br>ගොඩනැගුම </h2>
+  <p class="section-sub fade-up">ඔයාල භාවිතා කරද්දි ගැටලු සහගත තත්වයන් තිබ්බොත් දැනුවත් කරන්න</p>
+  <div class="theory-grid">
+    <!-- Theory 1 -->
+    <div class="theory-card" id="tc1">
+      <div class="theory-header" onclick="toggleTheory('tc1')">
+        <div class="theory-header-left"><div class="theory-num">01</div><div class="theory-title-block"><h3>විද්‍යුත් ආරෝපණය සහ කුලෝම් නියමය</h3><span>Electric Charge & Coulomb's Law</span></div></div>
+        <span class="theory-chevron">▼</span>
+      </div>
+      <div class="theory-body"><div class="theory-content">
+        <div class="tabs"><button class="tab-btn active" onclick="switchTab('t1','basic')">මූලික</button><button class="tab-btn" onclick="switchTab('t1','deep')">ගැඹුරු</button><button class="tab-btn" onclick="switchTab('t1','feel')">හිතට දැනෙන විදිහ</button></div>
+        <div id="t1-basic" class="tab-panel active"><div class="content-block"><h4>ආරෝපණ ප්‍රමාණනය (Quantization)</h4><p>ඕනෑම වස්තුවක ආරෝපණය $Q$ පවතින්නේ ඉලෙක්ට්‍රෝනයක මූලික ආරෝපණය $e = 1.6 \times 10^{-19}\text{ C}$ හි පූර්ණ සංඛ්‍යා ගුණාකාර ලෙස පමණි. ඉලෙක්ට්‍රෝන භාගයක් වැනි හුදකලා ආරෝපණ ස්වභාවධර්මයේ නොපවතී.</p></div><div class="formula-box">$$Q = \pm ne \quad (n = 1, 2, 3, \ldots)$$</div><div class="content-block"><h4>කුලෝම් නියමය</h4><p>ලක්ෂ්‍ය ආරෝපණ දෙකක් අතර ඇති විද්‍යුත් බලය, ඒ ආරෝපණ දෙකේ ප්‍රමාණ ගුණිතයට සමානුපාතික වන අතර දුරේ වර්ගයට ප්‍රතිලෝම සමානුපාතික වේ.</p></div><div class="formula-box">$$F = \frac{1}{4\pi\epsilon} \cdot \frac{Q_1 Q_2}{r^2}$$</div><div class="content-block"><h4>සන්නායකවල හැසිරීම</h4><p>ස්ථිතික සමතුලිතතාවයේදී සන්නායකයක් ඇතුළත අතිරික්ත ආරෝපණ නොපවතින අතර සියලු ආරෝපණ පිටත පෘෂ්ඨයේ පවතී.</p></div><div class="insight-box"><div class="insight-label">⚑ සියුම් කරුණ</div><p>සන්නායක ගෝල සඳහා කුලෝම් නියමය යොදන විට, ආරෝපණ ව්‍යාප්තිය ඒකාකාර වූ විට පමණක් සූත්‍රය වලංගු වේ. වස්තූන් ඉතා ආසන්න කළ විට ප්‍රේරණය නිසා ව්‍යාප්තිය විකෘති වන අතර සැබෑ බලය වෙනස් වේ.</p></div></div>
+        <div id="t1-deep" class="tab-panel"><div class="content-block"><h4>ප්‍රමාණනය පැවතීමට හේතුව</h4><p>ආරෝපණ ප්‍රමාණනය ක්වොන්ටම් යාන්ත්‍ර විද්‍යාවෙන් පැන නගී: ඉලෙක්ට්‍රෝන සහ ප්‍රෝටෝන ස්ථිර ආරෝපණ සහිත මූලික අංශු වේ. ස්වභාවධර්මයේදී අඛණ්ඩ "මුහුදක්" ලෙස ආරෝපණ නොමැත — ඇත්තේ විවික්ත ප්‍රමාණ පමණි.</p></div><div class="content-block"><h4>මාධ්‍යයේ කාර්යභාරය — පාරගම්‍යතාව ε</h4><p>බලය $F = \frac{1}{4\pi\epsilon}\frac{Q_1Q_2}{r^2}$ රඳා පවතින්නේ මාධ්‍යයේ ε පාරගම්‍යතාව මතය. රික්තයේදී $\epsilon = \epsilon_0 = 8.85 \times 10^{-12}$ F/m (අවම), උපරිම බලය ලැබේ. ජලයේදී ($\epsilon \approx 80\epsilon_0$) බලය 80 ගුණයකින් අඩු වේ.</p></div><div class="content-block"><h4>එල්ලා ඇති ආරෝපිත ගෝල සඳහා බලය</h4></div><div class="formula-box">$$T\cos\theta = mg \quad ; \quad T\sin\theta = F \quad \Rightarrow \quad F = mg\tan\theta$$</div></div>
+        <div id="t1-feel" class="tab-panel"><div class="feel-box"><div class="feel-label">✦ බුද්ධිමය උපමාව</div><p>ආරෝපණ ප්‍රමාණනය මුදල් වැනිය — ඔබට ලැබිය හැක්කේ සම්පූර්ණ ශත පමණක් මිස 0.3 ශතයක් නොවේ. ඉලෙක්ට්‍රෝන යනු විද්‍යුත් ලෝකයේ "ශත" වේ. කුලෝම් නියමය යනු ජලය යට එදිරිව වාතයේ තබන චුම්බක දෙකක් හා සමානයි — ජලය (ඉහළ ε) බලය විශාල ලෙස දුර්වල කරයි.</p></div></div>
+      </div></div>
+    </div>
+    <!-- Theory 2 -->
+    <div class="theory-card" id="tc2">
+      <div class="theory-header" onclick="toggleTheory('tc2')">
+        <div class="theory-header-left"><div class="theory-num">02</div><div class="theory-title-block"><h3>විද්‍යුත් ක්ෂේත්‍ර තීව්‍රතාවය සහ බල රේඛා</h3><span>Electric Field Intensity & Field Lines</span></div></div>
+        <span class="theory-chevron">▼</span>
+      </div>
+      <div class="theory-body"><div class="theory-content">
+        <div class="tabs"><button class="tab-btn active" onclick="switchTab('t2','basic')">මූලික</button><button class="tab-btn" onclick="switchTab('t2','deep')">ගැඹුරු</button><button class="tab-btn" onclick="switchTab('t2','feel')">හිතට දැනෙන විදිහ</button></div>
+        <div id="t2-basic" class="tab-panel active"><div class="content-block"><h4>අර්ථ දැක්වීම</h4><p>$E$ යනු ලක්ෂ්‍යයක ඒකක ධන ආරෝපණයක් මත ඇති බලයයි. එය දෛශික ප්‍රමාණයක් වන අතර දිශාව ධන පරීක්ෂණ ආරෝපණයක් මත ඇති බලයේ දිශාව වේ.</p></div><div class="formula-box">$$E = \frac{F}{Q} \quad \text{(NC}^{-1}\text{ හෝ Vm}^{-1}\text{)}$$</div><div class="content-block"><h4>ලක්ෂ්‍ය ආරෝපණයක් නිසා ක්ෂේත්‍රය</h4></div><div class="formula-box">$$E = \frac{1}{4\pi\epsilon} \cdot \frac{Q}{r^2}$$</div><div class="content-block"><h4>සන්නායක ගෝලයක්</h4><ul class="bullet-list"><li>ඇතුළත ($r &lt; R$): සෑම විටම $E = 0$</li><li>පෘෂ්ඨයේ සහ පිටත ($r \geq R$): සියලු ආරෝපණ මධ්‍යයේ ඇතැයි සලකා හැසිරේ</li></ul></div><div class="content-block"><h4>උදාසීන ලක්ෂ්‍ය (Neutral Points)</h4><ul class="bullet-list"><li>එකම වර්ගයේ ආරෝපණ: උදාසීන ලක්ෂ්‍යය ඒවා අතර පිහිටයි</li><li>විරුද්ධ සලකුණු ආරෝපණ: උදාසීන ලක්ෂ්‍යය පිටතින්, කුඩා ආරෝපණයට සමීපව පිහිටයි</li></ul></div></div>
+        <div id="t2-deep" class="tab-panel"><div class="content-block"><h4>සන්නායකයක් ඇතුළත E = 0 වන්නේ ඇයි?</h4><p>සන්නායකයක ඇති නිදහස් ඉලෙක්ට්‍රෝන ඉතා වේගයෙන් නැවත බෙදී යයි. බාහිර ක්ෂේත්‍රයක් යොදන විට, ඒවා අභ්‍යන්තර ප්‍රති ක්ෂේත්‍රයක් නිර්මාණය කර බාහිර එක නිශ්ප්‍රභා කරයි. සමතුලිතතාවයේදී $E_{internal} + E_{external} = 0$. මෙය ෆැරඩේ  නියමයේ ක්‍රියාකාරීත්වය පැහැදිලි කරයි.</p></div><div class="content-block"><h4>ක්ෂේත්‍ර රේඛා ඝනත්වය = ක්ෂේත්‍ර ශක්තිය</h4><p>ක්ෂේත්‍රයට ලම්බක ඒකක වර්ගඵලයක් හරහා ගමන් කරන බල රේඛා ගණන ක්ෂේත්‍ර ශක්තියට සමාන වේ. එකට ආසන්න → ප්‍රබල ක්ෂේත්‍රය; විසිරී → දුර්වල ක්ෂේත්‍රය.</p></div><div class="insight-box"><div class="insight-label">⚑ උසස් සටහන</div><p>ඕනෑම හැඩැති ආරෝපිත ගෝලයක් සඳහා, පිටත ක්ෂේත්‍රය හැසිරෙන්නේ සියලු ආරෝපණ කේන්ද්‍රයේ ලක්ෂ්‍ය ආරෝපණයක් ලෙස ය (ෂෙල් ප්‍රමේයය). මෙය සංකීර්ණ ජ්‍යාමිතීන් විසඳීම බෙහෙවින් සරල කරයි.</p></div></div>
+        <div id="t2-feel" class="tab-panel"><div class="feel-box"><div class="feel-label">✦ බුද්ධිමය උපමාව</div><p>ක්ෂේත්‍ර රේඛා නොපෙනෙන ජල ධාරා ලෙස සිතන්න: කරාමයකින් (ධන) ගලා බැස කාණුවකට (ඍණ) යයි. ධාරා එකට රැස් වන තැන ජලය ප්‍රබලයි (ඇදවැටීම් වැනි). විසිරී ඇති තැන සන්සුන්යි (විලක් වැනි). ලෝහ පෙට්ටියක් ඇතුළත සිටීම කුණාටුවක් මැද මුද්‍රා තැබූ කාමරයක සිටීම වැනි — සම්පූර්ණයෙන්ම සන්සුන්.</p></div></div>
+      </div></div>
+    </div>
+    <!-- Theory 3 -->
+    <div class="theory-card" id="tc3">
+      <div class="theory-header" onclick="toggleTheory('tc3')">
+        <div class="theory-header-left"><div class="theory-num">03</div><div class="theory-title-block"><h3>විද්‍යුත් ස්‍රාවය සහ ගවුස් ප්‍රමේයය</h3><span>Electric Flux & Gauss's Theorem</span></div></div>
+        <span class="theory-chevron">▼</span>
+      </div>
+      <div class="theory-body"><div class="theory-content">
+        <div class="tabs"><button class="tab-btn active" onclick="switchTab('t3','basic')">මූලික</button><button class="tab-btn" onclick="switchTab('t3','deep')">ගැඹුරු</button><button class="tab-btn" onclick="switchTab('t3','feel')">හිතට දැනෙන විදිහ</button></div>
+        <div id="t3-basic" class="tab-panel active"><div class="content-block"><h4>විද්‍යුත් ස්‍රාවය Φ</h4><p>පෘෂ්ඨයක් හරහා කොපමණ ක්ෂේත්‍ර රේඛා ගමන් කරනවාද යන්න මනින ප්‍රමාණයයි. θ යනු ක්ෂේත්‍ර දිශාව සහ පෘෂ්ඨ අභිලම්බය අතර කෝණයයි.</p></div><div class="formula-box">$$\Phi = EA\cos\theta$$</div><div class="content-block"><h4>ගවුස් ප්‍රමේයය</h4><p>ඕනෑම සංවෘත Gaussian පෘෂ්ඨයක් හරහා යන සමස්ත විද්‍යුත් ස්‍රාවය, ඇතුළත ඇති සමස්ත ආරෝපණය මාධ්‍යයේ පාරගම්‍යතාවයෙන් බෙදූ අගයට සමාන වේ.</p></div><div class="formula-box">$$\Phi_{total} = \frac{Q_{enclosed}}{\epsilon}$$</div><div class="content-block"><h4>සන්නායකයක් ඇතුළත අතිරික්ත ආරෝපණ නොමැති බවට සාධනය</h4><p>සන්නායකයක් ඇතුළත $E = 0$ සැමවිටම. සන්නායක පෘෂ්ඨයට යටින් Gaussian පෘෂ්ඨයක් අඳින්න → ස්‍රාවය = 0 → $Q_{enclosed} = 0$. එබැවින් සියලු අතිරික්ත ආරෝපණ පිටත පෘෂ්ඨයේ පමණක් පවතී.</p></div></div>
+        <div id="t3-deep" class="tab-panel"><div class="content-block"><h4>ගවුස් නියමයේ බලය</h4><p>සමමිතියට ගැලපෙන Gaussian පෘෂ්ඨයක් තෝරා ගැනීමෙන් දුෂ්කර අනුකලන ගැටළු සරල කරයි. අනන්ත තලයක් සඳහා $E = \sigma/2\epsilon_0$; දිගු රැහැනක් සඳහා $E = \lambda/2\pi\epsilon_0 r$. මේවා සෘජු අනුකලනයෙන් ඉතා අපහසුය.</p></div><div class="content-block"><h4>අභ්‍යන්තර ආරෝපණ +q සහිත කුහර සන්නායකයක්</h4><p>ගවුස් නියමයට අනුව සන්නායක ද්‍රව්‍ය ඇතුළත ක්ෂේත්‍රය ශුන්ය වීමට අභ්‍යන්තර පෘෂ්ඨයේ -q ප්‍රේරණය වේ. ආරෝපණ සංරක්ෂණය නිසා පිටත පෘෂ්ඨයේ +q පවතී. මෙය අභ්‍යන්තර කුහරය බාහිර ක්ෂේත්‍රයන්ගෙන් ආරක්ෂා කරයි.</p></div><div class="insight-box"><div class="insight-label">⚑ ඝනක කොනක ස්‍රාවය</div><p>ආරෝපණ $Q$ ඝනකයේ සිරස්වල එකක → සම්පූර්ණයෙන් වට කිරීමට සමාන ඝනක 8ක් අවශ්‍ය → එක් එක් ඝනකයට $Q/8\epsilon_0$ ස්‍රාවය → ස්පර්ශ වන මුහුණු 3 හරහා ස්‍රාවය 0 → ඉතිරි මුහුණු 3 සමානව බෙදාගනී → <strong>එක් මුහුණක්: $\Phi = Q/24\epsilon_0$</strong></p></div></div>
+        <div id="t3-feel" class="tab-panel"><div class="feel-box"><div class="feel-label">✦ බුද්ධිමය උපමාව</div><p>වත්තකින් පිටතට පියාසර කරන සමනලුන් (ක්ෂේත්‍ර රේඛා) ගණන් කරනවා සිතන්න. ඔබ වත්ත වටා වැටක් (Gaussian පෘෂ්ඨය) ඉදි කරනවා. වැට පසු කරන සමනලුන් ගණන ඇතුළත මල් (ආරෝපණ) කීයක් තිබේදැයි කියයි — වැටේ හැඩය කුමක් වුවත්. මල් නැති වත්තක් හරහා සමනලුන් කිසිවෙක් නොයයි.</p></div></div>
+      </div></div>
+    </div>
+    <!-- Theory 4 -->
+    <div class="theory-card" id="tc4">
+      <div class="theory-header" onclick="toggleTheory('tc4')">
+        <div class="theory-header-left"><div class="theory-num">04</div><div class="theory-title-block"><h3>විද්‍යුත් විභවය සහ විභව අනුක්‍රමණය</h3><span>Electric Potential & Potential Gradient</span></div></div>
+        <span class="theory-chevron">▼</span>
+      </div>
+      <div class="theory-body"><div class="theory-content">
+        <div class="tabs"><button class="tab-btn active" onclick="switchTab('t4','basic')">මූලික</button><button class="tab-btn" onclick="switchTab('t4','deep')">ගැඹුරු</button><button class="tab-btn" onclick="switchTab('t4','feel')">හිතට දැනෙන විදිහ</button></div>
+        <div id="t4-basic" class="tab-panel active"><div class="content-block"><h4>විද්‍යුත් විභවය V (අදිශ)</h4><p>ඒකක ධන ආරෝපණයක් අනන්තයේ සිට ලක්ෂ්‍යයකට ගෙන ඒමට බාහිර බලයෙන් කළ කාර්යය (ත්වරණයකින් තොරව). ලක්ෂ්‍ය ආරෝපණයක් සඳහා:</p></div><div class="formula-box">$$V = \frac{1}{4\pi\epsilon} \cdot \frac{Q}{r}$$</div><div class="content-block"><h4>විභව අනුක්‍රමණය (E–V සම්බන්ධතාව)</h4></div><div class="formula-box">$$E = -\frac{dV}{dr} \quad \text{හෝ} \quad E = -\frac{\Delta V}{\Delta r}$$</div><div class="content-block"><h4>සන්නායක සඳහා ප්‍රතිවිපාක</h4><ul class="bullet-list"><li>ඇතුළත: $E = 0 \Rightarrow \Delta V / \Delta r = 0 \Rightarrow V$ ස්ථිරයි</li><li>ඇතුළත V = පෘෂ්ඨ V (සමවිභව සන්නායකය)</li><li>භූගත කිරීම V = 0 සමඟ සම්බන්ධ කරයි</li></ul></div><div class="content-block"><h4>විභව ශක්තිය</h4></div><div class="formula-box">$$W = VQ \quad ; \quad \Delta W = \Delta U = U_{final} - U_{initial}$$</div></div>
+        <div id="t4-deep" class="tab-panel"><div class="content-block"><h4>V–r ප්‍රස්තාරය → E–r ප්‍රස්තාරය පරිවර්තනය</h4><p>V–r ප්‍රස්තාරයක ඕනෑම ලක්ෂ්‍යයක අනුක්‍රමණය (බෑවුම) $-E$ ට සමාන වේ. ප්‍රධාන නීති:</p></div><ul class="bullet-list"><li>V–r මත ධන බෑවුම → E ඍණ</li><li>ශුන්‍ය බෑවුම → E = 0</li><li>ස්ථිර බෑවුම → ඒකාකාර ක්ෂේත්‍රය</li><li>අඩුවන බෑවුම → E r සමඟ අඩු වේ</li></ul><div class="content-block"><h4>කේන්ද්‍රීය ගෝල: නිදහස් එදිරිව ප්‍රේරිත විභවය</h4><p>සම්පූර්ණ විභවය = නිදහස් විභවය (තම ආරෝපණ වලින්) + ප්‍රේරිත විභවය (අසල සන්නායක මත ආරෝපණ වලින්). රැහැනකින් සම්බන්ධ කළ විට, දෙකම එකම විභවයට පැමිණෙන තෙක් ආරෝපණ ගලයි.</p></div><div class="content-block"><h4>ඉලෙක්ට්‍රෝන වෝල්ට්</h4></div><div class="formula-box">$$1\text{ eV} = 1.6 \times 10^{-19}\text{ J} \quad (= qV, \text{ for } q=e, V=1\text{V})$$</div></div>
+        <div id="t4-feel" class="tab-panel"><div class="feel-box"><div class="feel-label">✦ බුද්ධිමය උපමාව</div><p>විභවය කියන්නේ කන්දක උස වැනිය. විද්‍යුත් ක්ෂේත්‍රය යනු බෑවුමේ තීව්‍රතාවය (අනුක්‍රමණය) පහළට යොමු වේ. කන්ද සමතලා වූ තැන ක්ෂේත්‍රය ශුන්‍ය වේ. ආරෝපණ ස්වභාවිකව ඉහළ විභවයේ සිට පහළ විභවයට ගමන් කරයි (ඉහළ සිට පහළ "උන්නතාංශය"). $E = -dV/dr$ හි සෘණ ලකුණ කියන්නේ: ක්ෂේත්‍රය පහළට යන දිශාවට යොමු වන බවයි.</p></div></div>
+      </div></div>
+    </div>
+    <!-- Theory 5 -->
+    <div class="theory-card" id="tc5">
+      <div class="theory-header" onclick="toggleTheory('tc5')">
+        <div class="theory-header-left"><div class="theory-num">05</div><div class="theory-title-block"><h3>ධාරිතාව සහ ධාරිත්‍රක</h3><span>Capacitance & Capacitors</span></div></div>
+        <span class="theory-chevron">▼</span>
+      </div>
+      <div class="theory-body"><div class="theory-content">
+        <div class="tabs"><button class="tab-btn active" onclick="switchTab('t5','basic')">මූලික</button><button class="tab-btn" onclick="switchTab('t5','deep')">ගැඹුරු</button><button class="tab-btn" onclick="switchTab('t5','feel')">හිතට දැනෙන විදිහ</button></div>
+        <div id="t5-basic" class="tab-panel active"><div class="content-block"><h4>ධාරිතාව C</h4><p>විභවය 1 V කින් වැඩි කිරීමට අවශ්‍ය ආරෝපණ ප්‍රමාණය. මෙය ජ්‍යාමිතිය සහ මාධ්‍යය මත පමණක් රඳා පවතී — Q හෝ V මත නොවේ.</p></div><div class="formula-box">$$C = \frac{Q}{V}$$</div><div class="content-block"><h4>සමාන්තර තහඩු ධාරිත්‍රකය</h4></div><div class="formula-box">$$C = \frac{\epsilon A}{d} \quad \xrightarrow{\text{පාර විද්‍යුතයක් සමඟ}} \quad C = \frac{K\epsilon_0 A}{d}$$</div><div class="content-block"><h4>ගබඩා වූ ශක්තිය</h4></div><div class="formula-box">$$U = \frac{1}{2}QV = \frac{1}{2}CV^2 = \frac{Q^2}{2C}$$</div><div class="content-block"><h4>සංයෝජන</h4><ul class="bullet-list"><li>ශ්‍රේණි: $\displaystyle\frac{1}{C} = \frac{1}{C_1} + \frac{1}{C_2} + \cdots$</li><li>සමාන්තර: $C = C_1 + C_2 + \cdots$</li></ul></div></div>
+        <div id="t5-deep" class="tab-panel"><div class="content-block"><h4>පාර විද්‍යුතකය: අවස්ථා දෙක</h4><p><strong>බැටරිය සම්බන්ධ කර ඇති විට:</strong> V නියතයි. පාර විද්‍යුතකය ඇතුල් කිරීම → C K ගුණයකින් වැඩිවේ → Q K ගුණයකින් වැඩිවේ → ශක්තිය K ගුණයකින් වැඩිවේ. බැටරිය අමතර කාර්යයක් කරයි.</p><p style="margin-top:0.5rem"><strong>බැටරිය ඉවත් කර ඇති විට:</strong> Q නියතයි. පාර විද්‍යුතකය ඇතුල් කිරීම → C K ගුණයකින් වැඩිවේ → V K ගුණයකින් අඩුවේ → ශක්තිය = $Q^2/2C$ K ගුණයකින් අඩුවේ. නැති වූ ශක්තිය යාන්ත්‍රික කාර්යය බවට පත්වේ (තහඩු අතරට පාර විද්‍යුතකය ඇදීම).</p></div><div class="content-block"><h4>ධාරිත්‍රක තහඩු අතර බලය</h4></div><div class="formula-box">$$F = \frac{1}{2}QE = \frac{Q^2}{2\epsilon A}$$</div><p style="color:var(--text2);font-size:0.9rem;">$\frac{1}{2}$ පැමිණෙන්නේ එක් තහඩුවක් අනෙක් තහඩුවේ ක්ෂේත්‍රය පමණක් ($E/2$) විඳීම නිසා මිස තමන්ගේ ක්ෂේත්‍රය නොවේ.</p><div class="content-block"><h4>හුදකලා ගෝලයක ධාරිතාව</h4></div><div class="formula-box">$$C = 4\pi\epsilon R$$</div><p style="color:var(--text2);font-size:0.9rem;">පෘථිවියේ ධාරිතාව $\approx 711\ \mu\text{F}$ — එබැවින් එය පරිපූර්ණ භූගත සමුද්දේශයකි.</p></div>
+        <div id="t5-feel" class="tab-panel"><div class="feel-box"><div class="feel-label">✦ බුද්ධිමය උපමාව</div><p>ධාරිත්‍රකයක් යනු ජලය (ආරෝපණ) එකතු කරන බාල්දියක් වැනිය. ධාරිතාව යනු බාල්දියේ හරස්කඩයි — පළල් බාල්දියක් ගැඹුරකට (වෝල්ටීයතාව) වැඩි ජලයක් රඳවයි. පාර විද්‍යුතකය යනු බාල්දිය ඇතුළත සිදුරු සහිත ස්පොන්ජියක් වැනිය — එය එකම ගැඹුරකදී වැඩි ජලයක් ගබඩා කිරීමට ඉඩ සලසයි. ශ්‍රේණිගත ධාරිත්‍රක යනු එකිනෙක මත තොග කළ බාල්දි වැනිය — සම්පූර්ණ උස වැඩි වේ, නමුත් සම්පූර්ණ පරිමාව කුඩාම බාල්දියෙන් සීමා වේ. සමාන්තර ධාරිත්‍රක යනු බාල්දි යාබදව තැබීම වැනිය — සම්පූර්ණ පරිමාව සරලව එකතු වේ.</p></div></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="section" style="padding-top:0">
+  <div class="section-label">අන්තර්ක්‍රියාකාරී නිරූපණය</div>
+  <h2 class="section-title fade-up">ක්ෂේත්‍රය දැනගන්න</h2>
+  <div class="demo-section fade-up">
+    <h3>⚡ විද්‍යුත් ක්ෂේත්‍ර දර්ශකය</h3>
+    <p>ස්ලයිඩර් ඇදගෙන ආරෝපණ ප්‍රමාණ සහ දුර වෙනස් කරන්න. ක්ෂේත්‍ර රේඛා සහ බලය තත්‍ය කාලීනව යාවත්කාලීන වන ආකාරය නරඹන්න.</p>
+    <canvas class="demo-canvas" id="fieldCanvas"></canvas>
+    <div class="controls">
+      <div class="ctrl-group"><label>ආරෝපණය Q1 (× 10⁻⁹ C)</label><input type="range" id="q1Slider" min="-5" max="5" step="0.5" value="3"><span class="ctrl-val" id="q1Val">3 nC</span></div>
+      <div class="ctrl-group"><label>ආරෝපණය Q2 (× 10⁻⁹ C)</label><input type="range" id="q2Slider" min="-5" max="5" step="0.5" value="-3"><span class="ctrl-val" id="q2Val">-3 nC</span></div>
+      <div class="ctrl-group"><label>දුර (cm)</label><input type="range" id="sepSlider" min="2" max="14" step="0.5" value="7"><span class="ctrl-val" id="sepVal">7 cm</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GRAPHS SECTION -->
+<section class="section" id="graphs">
+  <div class="section-label">02 කොටස — ප්‍රස්තාර සහ සටහන්</div>
+  <h2 class="section-title fade-up">අදෘශ්‍යමාන දේ දෘශ්‍යමාන කිරීම</h2>
+  <p class="section-sub fade-up">විවිධ ආරෝපණ වින්‍යාස සඳහා E–r සහ V–r අතර ප්‍රධාන සම්බන්ධතා සහ ඒවා සම්බන්ධ කරන නීති.</p>
+  <div class="graphs-grid">
+    <div class="graph-card fade-up"><h3>E එදිරිව r — ලක්ෂ්‍ය ආරෝපණය</h3><p>ක්ෂේත්‍රය $1/r^2$ ලෙස පහත වැටේ. ගෝලය ඇතුළත: $E=0$</p><div class="chart-wrapper"><canvas id="chart1"></canvas></div></div>
+    <div class="graph-card fade-up"><h3>V එදිරිව r — ලක්ෂ්‍ය ආරෝපණය</h3><p>විභවය $1/r$ ලෙස පහත වැටේ. සන්නායකයක් ඇතුළත නියතයි.</p><div class="chart-wrapper"><canvas id="chart2"></canvas></div></div>
+    <div class="graph-card fade-up"><h3>ධාරිත්‍රක ශක්තිය එදිරිව වෝල්ටීයතාව</h3><p>$U = \frac{1}{2}CV^2$ — පැරබෝලික සම්බන්ධතාව</p><div class="chart-wrapper"><canvas id="chart3"></canvas></div></div>
+    <div class="graph-card fade-up"><h3>බලය එදිරිව දුර (කුලෝම්)</h3><p>$F \propto 1/r^2$ — ප්‍රතිලෝම වර්ග නියමය</p><div class="chart-wrapper"><canvas id="chart4"></canvas></div></div>
+  </div>
+  <div style="margin-top: 3.5rem;"><div class="section-label">ප්‍රස්තාර පරිවර්තන නීති</div><h3 class="section-title" style="font-size:1.8rem;margin-bottom:1.5rem;">E–r ↔ V–r නීති</h3>
+    <div class="rules-grid"><div class="rule-card fade-up"><div class="rule-icon">📈</div><h4>E ධන → V බෑවුම ඍණ</h4><p>E–r ප්‍රස්තාරයේ E ධන නම්, V–r ප්‍රස්තාරයේ ඍණ බෑවුමක් තිබිය යුතුය (V r සමඟ අඩු වේ).</p></div><div class="rule-card fade-up"><div class="rule-icon">📏</div><h4>E නියත → V රේඛීය</h4><p>සමතලා (නියත) E–r ප්‍රස්තාරයක් යනු V–r ප්‍රස්තාරය නියත ඍණ බෑවුමක් සහිත සරල රේඛාවක් — ඒකාකාර ක්ෂේත්‍රය.</p></div><div class="rule-card fade-up"><div class="rule-icon">📉</div><h4>E අඩුවන → V බෑවුම අඩුවන</h4><p>E r සමඟ ක්‍රමයෙන් අඩු වන විට (ලක්ෂ්‍ය ආරෝපණයක් මෙන්), V–r හි බෑවුම ද ක්‍රමයෙන් අඩු බෑවුම් වේ — වක්‍රයක්.</p></div><div class="rule-card fade-up"><div class="rule-icon">⚫</div><h4>V බෑවුම = 0 → E = 0</h4><p>V–r ප්‍රස්තාරය සමතලා (තිරස්) වන තැන, විද්‍යුත් ක්ෂේත්‍රය හරියටම ශුන්‍ය වේ — උදා: සන්නායකයක් ඇතුළත.</p></div><div class="rule-card fade-up"><div class="rule-icon">🔁</div><h4>සන්නායක: V නියත, E = 0</h4><p>සන්නායකයක කේන්ද්‍රයේ සිට පෘෂ්ඨය දක්වා V නියතයි — V–r හි තිරස් රේඛාව → $E = -dV/dr = 0$.</p></div><div class="rule-card fade-up"><div class="rule-icon">🌐</div><h4>අන්තර් සන්නායක නොවන ගෝලය: ඇතුළත E ∝ r</h4><p>ඒකාකාරව ආරෝපිත අන්තර් සන්නායක නොවන ගෝලයක් සඳහා, $E$ කේන්ද්‍රයේ සිට පෘෂ්ඨය දක්වා රේඛීයව වැඩි වේ, පසුව $1/r^2$ ලෙස පිටත වැටේ.</p></div></div></div>
+</section>
+
+<!-- SPECIAL TOPICS -->
+<section class="section" id="special">
+  <div class="section-label">03 කොටස — උසස් කරුණු</div>
+  <h2 class="section-title fade-up">මූලික දේවල් වලින් ඔබ්බට</h2>
+  <p class="section-sub fade-up">දිගු සටහන් වල ඇති මාතෘකා — කොරෝනා විසර්ජනය, ෆැරඩේ නියමය  , E-ක්ෂේත්‍රයේ පෙන්ඩලම, කේන්ද්‍රීය ගෝල, භූගත කිරීම සහ පාර විද්‍යුත චූෂණ බලය.</p>
+  <div class="special-grid">
+    <div class="special-card fade-up"><div class="accent-glow" style="background:var(--gold)"></div><h3>⚡ කොරෝනා විසර්ජනය සහ වායු බිඳ වැටීම</h3><p>තියුණු සන්නායක අග්‍රවල, කුඩා අරය $R$ නිසා පෘෂ්ඨ ආරෝපණ ඝනත්වය $\sigma \propto 1/R$ අතිශයින් ඉහළ ය. ක්ෂේත්‍රය $3 \times 10^6\ \text{Vm}^{-1}$ ඉක්මවූ විට, වාතය අයනීකරණය වී කොරෝනා විසර්ජනයක් සිදු වේ. අකුණු ආරක්ෂක දණ්ඩවල අග තියුණු වන්නේ ආරෝපණ කාන්දු කිරීමට සහ භයානක ගොඩනැගීම වැළැක්වීමටය.</p></div>
+    <div class="special-card fade-up"><div class="accent-glow" style="background:var(--accent)"></div><h3>🛡 ෆැරඩේ නියමය/ විද්‍යුත් ආවරණය</h3><p>ඕනෑම හිස් සන්නායකයක් ඇතුළත, බාහිර ක්ෂේත්‍රයක් තිබුණත් $E = 0$ වේ. බාහිර ක්ෂේත්‍රයක් යොදන විට, ආරෝපණ පිටත පෘෂ්ඨයේ නැවත බෙදී ඇතුළත ක්ෂේත්‍රය සම්පූර්ණයෙන්ම අවලංගු කරයි. යෙදීම්: ලෝහ කූඩු තුළ සංවේදී ඉලෙක්ට්‍රොනික උපකරණ, අකුණු වලදී ආරක්ෂාව සඳහා මෝටර් රථ, මයික්‍රෝවේව් උදුන් දොරවල් (ලෝහ දැලක්).</p></div>
+    <div class="special-card fade-up"><div class="accent-glow" style="background:var(--pink)"></div><h3>🔵 කේන්ද්‍රීය ගෝල සහ භූගත කිරීම</h3><p>පිටත කේන්ද්‍රීය ගෝලය භූගත කළ විට ($V = 0$): $V_{outer} = V_{inner\,from} + V_{from\,outer\,charge} = 0$, එබැවින් පිටත ගෝලය එහි අභ්‍යන්තර පෘෂ්ඨය මත $-Q$ දරයි. මෙම වින්‍යාසය ගෝලාකාර ධාරිත්‍රකයක් සාදයි. ඕනෑම සන්නායකයක් භූගත කිරීම එහි සම්පූර්ණ විභවය ශුන්‍යයට බල කරයි, සුදුසු ආරෝපණ ප්‍රේරණය කරයි.</p></div>
+    <div class="special-card fade-up"><div class="accent-glow" style="background:var(--green)"></div><h3>🧲 පාර විද්‍යුත චූෂණ බලය</h3><p>ආරෝපිත ධාරිත්‍රකයක් (බැටරිය විසන්ධි කර) තම තහඩු අතරට පාර විද්‍යුතක තහඩුවක් ස්වයංසිද්ධව ඇද ගනී. $Q$ නියත වන විට $C$ වැඩිවීම ($K$ ගුණයකින්) නිසා ගබඩා වූ ශක්තිය $U = Q^2/2C$ අඩු වේ. නැති වූ ශක්තිය යාන්ත්‍රික කාර්යයක් කරයි — විද්‍යුත් ක්ෂේත්‍රය පාර විද්‍යුතකය මත චූෂණ බලයක් යොදයි. මෙය ස්වභාවධර්මයේ අවම ශක්ති මූලධර්මය ක්‍රියාත්මක වන ආකාරයයි.</p></div>
+    <div class="special-card fade-up"><div class="accent-glow" style="background:var(--purple)"></div><h3>🕰 E-ක්ෂේත්‍රයේ පෙන්ඩලම</h3><p>සිරස් ක්ෂේත්‍රයක (ඉහළට) නූලක ආරෝපිත ගෝලයක් (+Q, ස්කන්ධය m) සඳහා: ඵලදායී ගුරුත්වාකර්ෂණය $g_{eff} = g + QE/m$. ක්ෂේත්‍රය පහළට: $g_{eff} = g - QE/m$. තිරස් ක්ෂේත්‍රය: $g_{eff} = \sqrt{g^2 + (QE/m)^2}$. කාලපරිච්ඡේදය $T = 2\pi\sqrt{l/g_{eff}}$ — ක්ෂේත්‍රය පෙනෙන ගුරුත්වය වෙනස් කරයි!</p></div>
+    <div class="special-card fade-up"><div class="accent-glow" style="background:var(--orange)"></div><h3>⚡ ආරෝපිත අංශු වල චලිතය</h3><p>$E$ ක්ෂේත්‍රයක, ආරෝපණ $q$ මත බලය $F = qE$ → ත්වරණය $a = qE/m$. $V$ විභව වෙනසක් හරහා ලබාගත් ශක්තිය: චාලක ශක්තිය $= qV$. ඉලෙක්ට්‍රෝන වෝල්ට්: $1\ eV = 1.6 \times 10^{-19}\ J$. පියවර විභව අනතුර: අධි වෝල්ටීයතා රේඛා අසල ඇවිදීමෙන් පාද-පාද වෝල්ටීයතා වෙනස හේතුවෙන් ශරීරය හරහා මාරාන්තික ධාරාවක් ගලා යා හැක.</p></div>
+  </div>
+  <div style="margin-top: 3.5rem;"><div class="section-label">ආරෝපිත ගෝල සම්බන්ධ කිරීම</div><h3 class="section-title fade-up" style="font-size:1.8rem;margin-bottom:1rem;">ආරෝපණ ප්‍රතිව්‍යාප්තිය</h3>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;max-width:700px;"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><h4>පියවර 1: රැහැනකින් සම්බන්ධ කරන්න</h4><p>විභව සමාන වන තෙක් ආරෝපණ ගලයි ($V_1 = V_2$). $V = Q/4\pi\epsilon R$ නිසා, විශාල ගෝලය වැඩි ආරෝපණයක් ලබා ගනී ($Q \propto R$).</p></div>
+      <div class="tl-item"><div class="tl-dot"></div><h4>පියවර 2: ආරෝපණ අරය අනුව ප්‍රතිව්‍යාප්ත වේ</h4><p>විශාල ගෝලය වැඩි ආරෝපණයක් ගනී. ධන ආරෝපණ ඉහළ විභවයේ සිට පහළට ගලයි. ඍණ ආරෝපණ පහළ සිට ඉහළට ගලයි.</p></div>
+      <div class="tl-item"><div class="tl-dot"></div><h4>පියවර 3: අවසාන තත්වය</h4><p>දෙකම එකම විභවයක. විශාල ගෝලයට එහි මතුපිට ඉහළ ක්ෂේත්‍ර ඝනත්වයක් ඇත — නමුත් සම්පූර්ණ ආරෝපණ අරයට සමානුපාතික වේ ($Q \propto R$). පෘෂ්ඨ ආරෝපණ ඝනත්වය $\sigma \propto 1/R$ — කුඩා ගෝලයට ඉහළ $\sigma$ සහ ඉහළ දේශීය $E$ ඇත.</p></div>
+    </div></div></div>
+</section>
+
+<!-- QUESTIONS (fully translated) -->
+<section class="section" id="questions">
+  <div class="section-label">04 කොටස — න්‍යායාත්මක ප්‍රශ්න</div>
+  <h2 class="section-title fade-up">Think Deeply</h2>
+  <p class="section-sub fade-up">පිළිතුර බැලීමට පෙර ප්‍රශ්නය ගැන හොඳින් සිතන්න — මේවා මතක තබා ගැනීම නොව, සංකල්පය තේරෙනවාද යන්න පරීක්ෂා කරන ප්‍රශ්න.</p>
+  <div class="questions-grid">
+    <div class="q-card fade-up"><div class="q-header"><div class="q-num">01</div><p class="q-text">හුදකලා කුහර සන්නායක ගෝලයක $+Q$ ආරෝපණයක් ඇත. විභව අනුක්‍රමණ සංකල්පය භාවිතා කරමින්, ඇතුළත $E = 0$ වන්නේ මන්දැයි සහ ඇතුළත විභවය $V$ පෘෂ්ඨ විභවයට සමාන වන්නේ මන්දැයි පැහැදිලි කරන්න.</p></div><button class="q-reveal-btn" onclick="revealපිළිතුර(this,'qa1')">▶ පිළිතුර පෙන්වන්න</button><div class="q-answer" id="qa1"><div class="q-answer-inner"><div class="ans-label">✓ පිළිතුර</div><p><strong>ඇතුළත E = 0:</strong> නිදහස් ඉලෙක්ට්‍රෝන අන්යෝන්‍ය විකර්ෂණය යටතේ පිටත පෘෂ්ඨයට නැවත බෙදී යන අතර ඇතුළත කිසිදු ශුද්ධ බලයක් ක්‍රියා නොකරයි. මෙම සමතුලිතතාවය $E_{inside} = 0$ ලබා දෙයි — ගවුස් නියමයෙන් සාධනය කළ හැක (ඇතුළත Gaussian පෘෂ්ඨයක් → ස්‍රාවය = 0 → වසා ඇති ආරෝපණය = 0).</p><p><strong>ඇතුළත V නියත:</strong> $E = -dV/dr = 0$ සෑම තැනකම ඇතුළත බැවින්, $\Delta V / \Delta r = 0$, එනම් $V$ පිහිටුම අනුව වෙනස් නොවේ. එබැවින් සෑම අභ්‍යන්තර ලක්ෂ්‍යයකටම පෘෂ්ඨය හා සමාන විභවයක් ඇත: $V_{inside} = V_{surface} = \frac{1}{4\pi\epsilon}\frac{Q}{R}$.</p></div></div></div>
+    <div class="q-card fade-up"><div class="q-header"><div class="q-num">02</div><p class="q-text">උදාසීන කුහර සන්නායකයක් තුළ $+q$ ලක්ෂ්‍ය ආරෝපණයක් තබා ඇත. ගවුස් ප්‍රමේයය භාවිතා කරමින්, අභ්‍යන්තර සහ බාහිර පෘෂ්ඨ මත ආරෝපණ ප්‍රතිව්‍යාප්තිය විස්තර කරන්න.</p></div><button class="q-reveal-btn" onclick="revealපිළිතුර(this,'qa2')">▶ පිළිතුර පෙන්වන්න</button><div class="q-answer" id="qa2"><div class="q-answer-inner"><div class="ans-label">✓ පිළිතුර</div><p>සන්නායක ද්‍රව්‍ය ඇතුළත Gaussian පෘෂ්ඨයක් (එහි $E = 0$) අඳින්න. ස්‍රාවය = 0 → වසා ඇති සම්පූර්ණ ආරෝපණය = 0. කුහරය තුළ $+q$ ඇති බැවින්, අභ්‍යන්තර පෘෂ්ඨය $-q$ දැරිය යුතුය ($+q$ මගින් ප්‍රේරණය).</p><p>සන්නායකය මුලින් උදාසීන විය (සම්පූර්ණ ආරෝපණය = 0). අභ්‍යන්තර පෘෂ්ඨයේ $-q$ දිස්වන බැවින්, ආරෝපණ සංරක්ෂණය සඳහා බාහිර පෘෂ්ඨයේ $+q$ දිස්විය යුතුය. මෙම බාහිර $+q$ ඒකාකාරව බෙදී යන අතර කේන්ද්‍රයේ $+q$ ලක්ෂ්‍ය ආරෝපණයකට සමාන බාහිර ක්ෂේත්‍රයක් නිර්මාණය කරයි — අභ්‍යන්තර වින්‍යාසය සම්පූර්ණයෙන්ම ආවරණය කරයි.</p></div></div></div>
+    <div class="q-card fade-up"><div class="q-header"><div class="q-num">03</div><p class="q-text">ඒකාකාර විද්‍යුත් ක්ෂේත්‍රයක E–r ප්‍රස්තාරයේ නියත ධන අගයක් ඇත. ඊට අනුරූප V–r ප්‍රස්තාරය පෙනෙන්නේ කෙසේද, සහ ඇයි?</p></div><button class="q-reveal-btn" onclick="revealපිළිතුර(this,'qa3')">▶ පිළිතුර පෙන්වන්න</button><div class="q-answer" id="qa3"><div class="q-answer-inner"><div class="ans-label">✓ පිළිතුර</div><p>$E = -dV/dr$ සහ $E$ නියත හා ධන බැවින්, $dV/dr$ නියත හා ඍණ වේ. මෙයින් අදහස් කරන්නේ V r සමඟ රේඛීයව අඩු වන බවයි — V–r ප්‍රස්තාරය යනු $-E$ ට සමාන නියත ඍණ බෑවුමක් සහිත <strong>පහළට බෑවුම් වූ සරල රේඛාවකි</strong>.</p><p>භෞතික උදාහරණය: සමාන්තර තහඩු ධාරිත්‍රකයක තහඩු අතර. ක්ෂේත්‍රය ඒකාකාර බැවින්, විභවය ධන තහඩුවේ සිට ඍණ තහඩුව දක්වා රේඛීයව පහත වැටේ.</p></div></div></div>
+    <div class="q-card fade-up"><div class="q-header"><div class="q-num">04</div><p class="q-text">ආරෝපිත සමාන්තර තහඩු ධාරිත්‍රකයක් (බැටරියෙන් විසන්ධි කර) එහි තහඩු අතරට පාර විද්‍යුතක තහඩුවක් ඇතුල් කරනු ලැබේ. ගබඩා වූ ශක්තිය අඩු වේ — මෙම ශක්තිය කොහේ යයිද?</p></div><button class="q-reveal-btn" onclick="revealපිළිතුර(this,'qa4')">▶ පිළිතුර පෙන්වන්න</button><div class="q-answer" id="qa4"><div class="q-answer-inner"><div class="ans-label">✓ පිළිතුර</div><p>බැටරිය විසන්ධි කළ විට, $Q$ නියතයි. පාර විද්‍යුතකය ඇතුල් කිරීම $C$ $K$ ගුණයකින් වැඩි කරයි. $U = Q^2/2C$ නිසා $C$ වැඩි වන විට $U$ අඩු වේ.</p><p>"නැති වූ" ශක්තිය <strong>යාන්ත්‍රික චාලක ශක්තිය</strong> බවට හැරේ — විද්‍යුත් ක්ෂේත්‍රය පාර විද්‍යුතක තහඩුව මත ආකර්ෂණීය චූෂණ බලයක් යොදයි, එය ඇතුළට ඇද ගනී. තහඩුව ධාරිත්‍රකය තුළට ත්වරණය වේ. මෙය පාර විද්‍යුත චූෂණ බලය වන අතර, පද්ධතිය අවම විද්‍යුත් විභව ශක්තිය සොයන ස්වභාවයේ සෘජු ප්‍රතිවිපාකයකි.</p></div></div></div>
+    <div class="q-card fade-up"><div class="q-header"><div class="q-num">05</div><p class="q-text">තියුණු සන්නායක අග්‍ර ආරෝපණ සහ ක්ෂේත්‍රය තීව්‍ර ලෙස සාන්ද්‍රණය කරන්නේ ඇයි, සහ එහි ප්‍රායෝගික ප්‍රතිවිපාකය කුමක්ද? තීරණාත්මක ක්ෂේත්‍ර සීමාව දෙන්න.</p></div><button class="q-reveal-btn" onclick="revealපිළිතුර(this,'qa5')">▶ පිළිතුර පෙන්වන්න</button><div class="q-answer" id="qa5"><div class="q-answer-inner"><div class="ans-label">✓ පිළිතුර</div><p>$V$ විභවයක ඇති සන්නායකයක් සඳහා, පෘෂ්ඨ ආරෝපණ ඝනත්වය $\sigma \propto 1/R$ (කුඩා අරය → ඉහළ ඝනත්වය). දේශීය ක්ෂේත්‍රය $E = \sigma/\epsilon_0$ බැවින්, තියුණු අග්‍ර ($R \to 0$) $E \to \infty$ වේ.</p><p>$E$ $3 \times 10^6\ \text{Vm}^{-1}$ ඉක්මවූ විට, වාතයේ අණු අයනීකරණය වේ. අයන ත්වරණය වී හිම පතන අයනීකරණයක් ඇති කරයි — <strong>කොරෝනා විසර්ජනය</strong>. අකුණු සන්නායකවලදී, මෙම පාලිත කාන්දුව සමුච්චිත ආරෝපණය අඛණ්ඩව විසුරුවා හරින අතර, ගොඩනැගිලිවලට හදිසි භයානක අකුණු පහර වැළැක්වීමට උපකාරී වේ.</p></div></div></div>
+  </div>
+</section>
+
+<!-- MATH PROBLEMS (fully translated) -->
+<section class="section" id="math">
+  <div class="section-label">05 කොටස — ගණිතමය ගැටළු</div>
+  <h2 class="section-title fade-up">Solve & Master</h2>
+  <p class="section-sub fade-up">සම්පූර්ණ විසඳුම් සහිත පියවරෙන් පියවර සංඛ්‍යාන ගැටළු. බැලීමට පෙර උත්සාහ කරන්න!</p>
+  <div class="mq-card fade-up"><div class="mq-header"><div class="mq-num">1</div><p class="q-text">ස්කන්ධය 5 g වන ආරෝපිත ගෝලයක් තිරස් ඒකාකාර ක්ෂේත්‍රයක ($0.5\ \text{NC}^{-1}$) තුළ දිග 2 m සේද නූලකින් එල්ලා ඇත. එය සමතුලිතතාවයේදී තිරස් අතට 2 cm විස්ථාපනය වේ. ආරෝපණය සොයන්න.</p></div><button class="mq-reveal-btn" onclick="revealMQ(this,'mqa1')">▶ විසඳුම පෙන්වන්න</button><div class="mq-answer" id="mqa1"><div class="mq-answer-inner"><div class="sol-label">✓ විසඳුම</div><p>බර: $mg = 5 \times 10^{-3} \times 10 = 0.05\ \text{N}$</p><p>කුඩා කෝණය: $\tan\theta \approx \sin\theta = 0.02/2 = 0.01$</p><p>සමතුලිතතාව: $\tan\theta = QE/mg \Rightarrow 0.01 = Q \times 0.5 / 0.05$</p><p>$Q = 0.01 \times 0.05 / 0.5 = \mathbf{1 \times 10^{-3}\ C = 1\ mC}$</p></div></div></div>
+  <div class="mq-card fade-up"><div class="mq-header"><div class="mq-num">2</div><p class="q-text">$+Q$ ආරෝපණය $a$ දාර දිගැති ඝනකයක එක් සිරස්වල තබා ඇත. ආරෝපණය ස්පර්ශ නොකරන එක් මුහුණක් හරහා විද්‍යුත් ස්‍රාවය සොයන්න.</p></div><button class="mq-reveal-btn" onclick="revealMQ(this,'mqa2')">▶ විසඳුම පෙන්වන්න</button><div class="mq-answer" id="mqa2"><div class="mq-answer-inner"><div class="sol-label">✓ විසඳුම</div><p>කොනෙහි ආරෝපණය සම්පූර්ණයෙන් වට කිරීමට සමාන ඝනක 8ක් අවශ්‍ය වේ.</p><p>සියලු ඝනක 8 සඳහා සම්පූර්ණ ස්‍රාවය: $Q/\epsilon_0$</p><p>එක් ඝනකයක් සඳහා ස්‍රාවය: $Q/8\epsilon_0$</p><p>මුහුණු 3 ක් ආරෝපණය ස්පර්ශ කරයි → ස්‍රාවය = 0 (ක්ෂේත්‍රය මෙම මුහුණු වලට සමාන්තර වේ)</p><p>ඉතිරි මුහුණු 3 ස්‍රාවය සමානව බෙදා ගනී:</p><p>$\Phi_{face} = \dfrac{Q/8\epsilon_0}{3} = \mathbf{\dfrac{Q}{24\epsilon_0}}$</p></div></div></div>
+  <div class="mq-card fade-up"><div class="mq-header"><div class="mq-num">3</div><p class="q-text">ප්‍රෝටෝනයක් A සිට B දක්වා $V_{AB}$ විභව වෙනසක් හරහා ගමන් කරයි. ක්ෂේත්‍රය $3.2 \times 10^{-19}\ \text{J}$ කාර්යයක් කරන්නේ නම්, $V_{AB}$ සොයන්න.</p></div><button class="mq-reveal-btn" onclick="revealMQ(this,'mqa3')">▶ විසඳුම පෙන්වන්න</button><div class="mq-answer" id="mqa3"><div class="mq-answer-inner"><div class="sol-label">✓ විසඳුම</div><p>ක්ෂේත්‍රය විසින් කරන ලද කාර්යය: $W = q \cdot V_{AB}$</p><p>$3.2 \times 10^{-19} = 1.6 \times 10^{-19} \times V_{AB}$</p><p>$V_{AB} = 3.2/1.6 = \mathbf{2\ V}$</p></div></div></div>
+  <div class="mq-card fade-up"><div class="mq-header"><div class="mq-num">4</div><p class="q-text">$2\ \mu\text{F}$ ධාරිත්‍රකයක් 100 V දක්වා ආරෝපණය කර විසන්ධි කර ඇත. $K=4$ සහිත පාර විද්‍යුතකයක් ඇතුල් කරනු ලැබේ. නව ගබඩා වූ ශක්තිය සොයන්න.</p></div><button class="mq-reveal-btn" onclick="revealMQ(this,'mqa4')">▶ විසඳුම පෙන්වන්න</button><div class="mq-answer" id="mqa4"><div class="mq-answer-inner"><div class="sol-label">✓ විසඳුම</div><p>මූලික ශක්තිය: $U_1 = \frac{1}{2}CV^2 = \frac{1}{2}(2\times10^{-6})(100)^2 = 0.01\ \text{J}$</p><p>බැටරිය ඉවත් කර ඇති විට → $Q$ නියතයි. $K=4$ ඇතුල් කිරීම: $C' = 4C$</p><p>නව ශක්තිය: $U_2 = Q^2/2C' = U_1/K = 0.01/4 = \mathbf{2.5\ mJ}$</p><p>නැති වූ ශක්තිය (7.5 mJ) චූෂණ බලයට එරෙහිව පාර විද්‍යුතක තහඩුව ඇද ගැනීමට භාවිතා කරන ලදී.</p></div></div></div>
+  <div class="mq-card fade-up"><div class="mq-header"><div class="mq-num">5</div><p class="q-text">අභ්‍යන්තර සන්නායක ගෝලය (අරය $a$, ආරෝපණය $+Q$) භූගත කරන ලද පිටත ගෝලයක් (අරය $b$) තුළ ඇත. පිටත ගෝලයේ අභ්‍යන්තර පෘෂ්ඨය මත ප්‍රේරණය වන ආරෝපණය සොයන්න.</p></div><button class="mq-reveal-btn" onclick="revealMQ(this,'mqa5')">▶ විසඳුම පෙන්වන්න</button><div class="mq-answer" id="mqa5"><div class="mq-answer-inner"><div class="sol-label">✓ විසඳුම</div><p>පිටත ගෝලය භූගත කර ඇත → $V_{outer} = 0$</p><p>$V_{outer} = V_{from\,inner\,Q} + V_{from\,outer\,charge\,q} = 0$</p><p>$\frac{1}{4\pi\epsilon}\frac{Q}{b} + \frac{1}{4\pi\epsilon}\frac{q}{b} = 0 \Rightarrow Q + q = 0$</p><p>$\therefore q = \mathbf{-Q}$ පිටත ගෝලයේ අභ්‍යන්තර පෘෂ්ඨය මත.</p><p>පිටත ගෝලයේ බාහිර පෘෂ්ඨය ශුන්‍ය ආරෝපණයක් දරයි (භූගත කිරීම = ආරෝපණ පොළොවට කාන්දු වේ).</p></div></div></div>
+</section>
+
+<footer>
+<strong>Electronic Universe</strong><br><br>
+Sinhala Interactive Electrostatics Learning Experience<br>
+Developed by K3N · Code by Claude AI, DeepSeek AI<br>
+Info : <a href="https://t.me/k3N_edu" target="_blank" style="color:var(--accent);text-decoration:none">t.me/K3ndH</a>
+</footer>
+
+</div>
+
+<script>
+// Theme, particles, accordions, tabs, reveal, charts, field canvas (all original logic, unchanged)
+function toggleTheme() { const html = document.documentElement; html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark'; updateCharts(); }
+(function(){ const canvas=document.getElementById('particles-canvas'),ctx=canvas.getContext('2d'); let particles=[],W,H; function resize(){W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight;} resize(); window.addEventListener('resize',resize); class Particle{constructor(){this.reset();} reset(){this.x=Math.random()*W; this.y=Math.random()*H; this.vx=(Math.random()-0.5)*0.4; this.vy=(Math.random()-0.5)*0.4; this.r=Math.random()*1.5+0.5; this.col=Math.random()>0.5?[79,195,247]:[255,213,79];} update(){this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset();} draw(){ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=`rgba(${this.col[0]},${this.col[1]},${this.col[2]},0.6)`; ctx.fill();}} for(let i=0;i<80;i++) particles.push(new Particle()); function drawConnections(){for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.hypot(dx,dy); if(d<100){ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle=`rgba(79,195,247,${0.12*(1-d/100)})`; ctx.lineWidth=0.5; ctx.stroke();}}} function animate(){ctx.clearRect(0,0,W,H); particles.forEach(p=>{p.update(); p.draw();}); drawConnections(); requestAnimationFrame(animate);} animate();})();
+function toggleTheory(id){document.getElementById(id).classList.toggle('open');}
+function switchTab(group,tab){ document.querySelectorAll(`[id^="${group}-"]`).forEach(el=>el.classList.remove('active')); const el=document.getElementById(`${group}-${tab}`); if(el)el.classList.add('active'); const btns=el?.closest('.theory-content')?.querySelectorAll('.tab-btn'); if(btns){btns.forEach(b=>b.classList.remove('active')); btns.forEach(b=>{if(b.getAttribute('onclick').includes(tab))b.classList.add('active');});}}
+function revealපිළිතුර(btn,id){const ans=document.getElementById(id); if(!ans.classList.contains('open')){ans.classList.add('open'); btn.textContent='✓ පිළිතුර Shown'; btn.classList.add('revealed'); btn.disabled=true; setTimeout(()=>{if(window.renderMathInElement)renderMathInElement(ans,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});},100); setTimeout(()=>ans.scrollIntoView({behavior:'smooth',block:'nearest'}),200);}}
+function revealMQ(btn,id){const ans=document.getElementById(id); if(!ans.classList.contains('open')){ans.classList.add('open'); btn.textContent='✓ විසඳුම Shown'; btn.classList.add('revealed'); btn.disabled=true; setTimeout(()=>{if(window.renderMathInElement)renderMathInElement(ans,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});},100); setTimeout(()=>ans.scrollIntoView({behavior:'smooth',block:'nearest'}),200);}}
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1}); document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+const fieldCanvas=document.getElementById('fieldCanvas'),fctx=fieldCanvas.getContext('2d'),q1Slider=document.getElementById('q1Slider'),q2Slider=document.getElementById('q2Slider'),sepSlider=document.getElementById('sepSlider'),q1Val=document.getElementById('q1Val'),q2Val=document.getElementById('q2Val'),sepVal=document.getElementById('sepVal');
+function getFieldCanvasSize(){const maxW=Math.min(fieldCanvas.parentElement.clientWidth-40,600); return{w:maxW,h:280};}
+function drawField(){const{w,h}=getFieldCanvasSize(); fieldCanvas.width=w; fieldCanvas.height=h; const q1=parseFloat(q1Slider.value)*1e-9,q2=parseFloat(q2Slider.value)*1e-9,sep=parseFloat(sepSlider.value)*0.01; q1Val.textContent=(q1*1e9).toFixed(1)+' nC'; q2Val.textContent=(q2*1e9).toFixed(1)+' nC'; sepVal.textContent=(sep*100).toFixed(1)+' cm'; const isDark=document.documentElement.dataset.theme==='dark'; fctx.fillStyle=isDark?'#0d1117':'#f0f4ff'; fctx.fillRect(0,0,w,h); const cx=w/2,cy=h/2,scale=w/0.20,p1x=cx-(sep/2)*scale,p2x=cx+(sep/2)*scale,p1y=cy,p2y=cy,k=9e9; const nLines=14; for(let l=0;l<nLines;l++){const angle=(l/nLines)*2*Math.PI; let x=p1x+Math.cos(angle)*6,y=p1y+Math.sin(angle)*6; fctx.beginPath(); fctx.moveTo(x,y); fctx.strokeStyle=isDark?'rgba(79,195,247,0.35)':'rgba(2,132,199,0.35)'; fctx.lineWidth=1; for(let step=0;step<200;step++){const dx1=(x-p1x)/scale,dy1=(y-p1y)/scale,dx2=(x-p2x)/scale,dy2=(y-p2y)/scale,r1=Math.hypot(dx1,dy1)+1e-6,r2=Math.hypot(dx2,dy2)+1e-6; let ex=k*q1*dx1/(r1*r1*r1*scale)+k*q2*dx2/(r2*r2*r2*scale); let ey=k*q1*dy1/(r1*r1*r1*scale)+k*q2*dy2/(r2*r2*r2*scale); const em=Math.hypot(ex,ey); if(em<1e-15)break; ex/=em; ey/=em; x+=ex*3; y+=ey*3; if(x<0||x>w||y<0||y>h)break; if(Math.hypot(x-p1x,y-p1y)<7||Math.hypot(x-p2x,y-p2y)<7)break; fctx.lineTo(x,y);} fctx.stroke();} [[p1x,p1y,q1],[p2x,p2y,q2]].forEach(([px,py,q])=>{const col=q>=0?(isDark?'#4fc3f7':'#0284c7'):(isDark?'#f48fb1':'#be185d'); const grd=fctx.createRadialGradient(px,py,2,px,py,14); grd.addColorStop(0,col); grd.addColorStop(1,col.replace(')',',0)').replace('rgb','rgba')); fctx.beginPath(); fctx.arc(px,py,10,0,Math.PI*2); fctx.fillStyle=grd; fctx.fill(); fctx.strokeStyle=col; fctx.lineWidth=1.5; fctx.stroke(); fctx.fillStyle=isDark?'#fff':'#000'; fctx.font='bold 11px JetBrains Mono, monospace'; fctx.textAlign='center'; fctx.textBaseline='middle'; fctx.fillText(q>=0?'+':'−',px,py);}); const force=k*Math.abs(q1)*Math.abs(q2)/(sep*sep); fctx.fillStyle=isDark?'rgba(255,213,79,0.8)':'rgba(180,83,9,0.8)'; fctx.font='11px JetBrains Mono, monospace'; fctx.textAlign='center'; fctx.fillText(`F = ${(force*1e6).toFixed(2)} μN`,cx,h-15);}
+[q1Slider,q2Slider,sepSlider].forEach(s=>s.addEventListener('input',drawField)); drawField(); window.addEventListener('resize',drawField);
+let charts={};
+function getChartColors(){const isDark=document.documentElement.dataset.theme==='dark'; return{accent:isDark?'#4fc3f7':'#0284c7',gold:isDark?'#ffd54f':'#b45309',pink:isDark?'#f48fb1':'#be185d',green:isDark?'#69f0ae':'#059669',grid:isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.08)',text:isDark?'#a0aec0':'#374151',bg:isDark?'#0d1117':'#f0f4ff'};}
+function buildCharts(){const c=getChartColors(); const r1=Array.from({length:80},(_,i)=>0.2+i*0.1),e1=r1.map(r=>r<1?0:1/(r*r)); if(charts.c1)charts.c1.destroy(); charts.c1=new Chart(document.getElementById('chart1'),{type:'line',data:{labels:r1.map(r=>r.toFixed(1)),datasets:[{data:e1,borderColor:c.accent,borderWidth:2,pointRadius:0,fill:false,tension:0.3}]},options:chartOpts(c,'r (units)','E (arb.)')}); const r2=Array.from({length:80},(_,i)=>0.2+i*0.1),v2=r2.map(r=>r<1?1:1/r); if(charts.c2)charts.c2.destroy(); charts.c2=new Chart(document.getElementById('chart2'),{type:'line',data:{labels:r2.map(r=>r.toFixed(1)),datasets:[{data:v2,borderColor:c.gold,borderWidth:2,pointRadius:0,fill:false,tension:0.3}]},options:chartOpts(c,'r (units)','V (arb.)')}); const vArr=Array.from({length:50},(_,i)=>i*4),uArr=vArr.map(v=>0.5*2e-6*v*v*1000); if(charts.c3)charts.c3.destroy(); charts.c3=new Chart(document.getElementById('chart3'),{type:'line',data:{labels:vArr,datasets:[{data:uArr,borderColor:c.pink,borderWidth:2,pointRadius:0,fill:true,backgroundColor:`${c.pink}18`,tension:0.4}]},options:chartOpts(c,'Voltage V (V)','Energy U (mJ)')}); const r4=Array.from({length:80},(_,i)=>0.5+i*0.1),f4=r4.map(r=>1/(r*r)); if(charts.c4)charts.c4.destroy(); charts.c4=new Chart(document.getElementById('chart4'),{type:'line',data:{labels:r4.map(r=>r.toFixed(1)),datasets:[{data:f4,borderColor:c.green,borderWidth:2,pointRadius:0,fill:true,backgroundColor:`${c.green}18`,tension:0.3}]},options:chartOpts(c,'r (units)','F (arb.)')});}
+function chartOpts(c,xLabel,yLabel){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:6},grid:{color:c.grid},title:{display:true,text:xLabel,color:c.text,font:{size:10}}},y:{ticks:{color:c.text,font:{size:9},maxTicksLimit:5},grid:{color:c.grid},title:{display:true,text:yLabel,color:c.text,font:{size:10}}}},animation:{duration:400}};}
+function updateCharts(){setTimeout(buildCharts,100); setTimeout(drawField,100);}
+window.addEventListener('DOMContentLoaded',()=>{if(window.renderMathInElement)renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false}); buildCharts();});
+const themeObs=new MutationObserver(updateCharts); themeObs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>
+</body>
+</html>

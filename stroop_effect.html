@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Stroop Effect Brain Training | K3nfold</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', system-ui, sans-serif;
+            background: linear-gradient(145deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            color: #f0f0f0;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 650px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 40px;
+            padding: 30px 20px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.2rem;
+            background: linear-gradient(to right, #ffd86f, #fc6c8c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #cdd6f4;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        .screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .screen.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* START SCREEN */
+        .scientist-box, .instruction-box {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 18px;
+            margin: 15px 0;
+            color: #f5e6d3;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .instruction-box strong {
+            color: #ffd86f;
+        }
+
+        .level-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .level-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-radius: 24px;
+            padding: 16px 18px;
+            text-align: left;
+            color: #e6e6fa;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .level-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #fbc2eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(252, 108, 140, 0.3);
+        }
+
+        .level-btn.selected {
+            background: rgba(255, 215, 0, 0.18);
+            border-color: #ffd86f;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transform: scale(1.02);
+        }
+
+        .level-num {
+            font-size: 1.8rem;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 6px 0;
+            color: #ffd86f;
+        }
+
+        .level-desc {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+        .level-desc small {
+            display: block;
+            color: #b0b0d0;
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-radius: 50px;
+            padding: 16px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 8px 5px;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.3);
+        }
+        .btn:active {
+            transform: scale(0.94);
+        }
+        .btn:disabled {
+            opacity: 0.35;
+            pointer-events: none;
+            filter: grayscale(0.4);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            border: none;
+            color: #1a1a2e;
+            font-weight: 700;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            border: none;
+            color: #1a1a2e;
+            font-weight: 700;
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+            border: none;
+            color: #1a1a2e;
+        }
+
+        /* GAME SCREEN */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .timer-bar-container {
+            width: 100%;
+            height: 14px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            margin: 10px 0 20px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background: #4caf50;
+            border-radius: 20px;
+            transition: width 0.1s linear, background-color 0.3s ease;
+        }
+
+        .words-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0 25px;
+        }
+        .color-word {
+            font-size: 4.5rem;
+            font-weight: 900;
+            text-align: center;
+            letter-spacing: 3px;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            line-height: 1.2;
+            padding: 0 10px;
+        }
+        .word-separator {
+            font-size: 1.5rem;
+            color: #aaa;
+            font-weight: 300;
+        }
+
+        .btn-true, .btn-false {
+            flex: 1;
+            margin: 8px;
+            font-size: 1.4rem;
+            padding: 18px;
+            border-radius: 36px;
+            font-weight: 700;
+        }
+        .btn-true {
+            background: rgba(0, 200, 83, 0.18);
+            border: 2px solid #00e676;
+            color: #b9f6ca;
+        }
+        .btn-false {
+            background: rgba(255, 82, 82, 0.18);
+            border: 2px solid #ff5252;
+            color: #ffcdd2;
+        }
+
+        .feedback-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            background: rgba(0,0,0,0.8);
+            padding: 20px 40px;
+            border-radius: 40px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+
+        .restart-link {
+            color: #ffd86f;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        .result-box, .explanation-box {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 20px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+        .stat {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        .footer-note a {
+            color: #ffd86f;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .color-word {
+                font-size: 3.2rem;
+            }
+            .btn-true, .btn-false {
+                font-size: 1.1rem;
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen active">
+            <h1>🧠 Stroop Effect</h1>
+            <div class="subtitle">විධායක ක්‍රියාකාරිත්වය සහ නිෂේධන පාලනය පුහුණු කරන්න</div>
+
+            <div class="scientist-box">
+                <strong style="color:#ffd86f;">🔬 විද්‍යාඥයා සහ සොයාගැනීම</strong><br>
+                1935 දී ඇමරිකානු මනෝවිද්‍යාඥ <strong>John Ridley Stroop</strong> විසින් මෙම සංසිද්ධිය පළමු වරට විද්‍යාත්මකව විස්තර කරන ලදී. වර්ණ නාමයක් වෙනත් වර්ණයකින් මුද්‍රණය කළ විට, එම වචනයේ තේරුම නිසා තීන්ත පාට හඳුනාගැනීම ප්‍රමාද වීම <strong>Stroop Interference</strong> නම් වේ.
+            </div>
+
+            <div class="instruction-box">
+                <strong>📋 ක්‍රීඩා කරන ආකාරය</strong><br>
+                තිරයේ <span style="color:#ffd86f;">ඉහළින්</span> සහ <span style="color:#ffd86f;">පහළින්</span> වර්ණ නාම දෙකක් පෙන්වනු ඇත.<br>
+                👉 <strong>ඉහළ වචනයේ තීන්ත පාට</strong> (අකුරු වල පාට) සහ <strong>පහළ වචනයේ අරුත</strong> (ලියා ඇති නම) සමානද?<br>
+                සමාන නම් <strong>✔ ඔව්</strong>, නැතහොත් <strong>✘ නැත</strong> තෝරන්න.<br>
+                ⚡ වචනවල තේරුම් නොසලකා හරින්න – තීන්ත පාට සහ පහළ නම පමණක් සංසන්දනය කරන්න.
+            </div>
+
+            <h3 style="color: #f8e3a0; margin-bottom: 10px;">ඔබේ සංජානන මට්ටම තෝරන්න</h3>
+            <div class="level-grid" id="level-grid"></div>
+            <div style="display: flex; justify-content: center; margin-top: 15px;">
+                <button id="begin-btn" class="btn btn-primary" disabled>▶ අභියෝගය ආරම්භ කරන්න</button>
+            </div>
+            <div class="footer-note">
+                Project by <a href="https://t.me/k3N_edu" target="_blank">K3nfold✨</a> | code by deepseek
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <span id="score-display">ලකුණු: 0</span>
+                <span id="progress-display">ප්‍රශ්නය 1/20</span>
+            </div>
+            <div class="timer-bar-container">
+                <div id="timer-bar" class="timer-bar" style="width: 100%; background-color: #4caf50;"></div>
+            </div>
+            <div style="position: relative;">
+                <div class="words-container">
+                    <div id="top-word" class="color-word">RED</div>
+                    <div class="word-separator">━</div>
+                    <div id="bottom-word" class="color-word">BLUE</div>
+                </div>
+                <div id="feedback" class="feedback-overlay"></div>
+            </div>
+            <div style="display: flex; justify-content: center; margin-top: 5px;">
+                <button id="btn-true" class="btn-true">✔ ඔව්</button>
+                <button id="btn-false" class="btn-false">✘ නැත</button>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <span id="restart-game" class="restart-link">↺ ආරම්භයට</span>
+            </div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen" class="screen">
+            <h2 style="color: #ffd86f;">🏆 මට්ටම සම්පූර්ණයි</h2>
+            <div id="result-stats" class="result-box"></div>
+            <div id="explanation" class="explanation-box"></div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
+                <button id="replay-btn" class="btn btn-success">↻ නැවත ක්‍රීඩා කරන්න</button>
+                <button id="level-select-btn" class="btn btn-warning">🧩 වෙනත් මට්ටමක්</button>
+            </div>
+            <div class="footer-note" style="margin-top:15px;">
+                Project by <a href="https://t.me/k3N_edu" target="_blank">K3nfold✨</a> | code by deepseek
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- LEVELS ----------
+            const levels = [
+                { id:1, timeLimit:4.0, congruentPct:60, nameEn:"Average 18-year-old", descSi:"සාමාන්‍ය 18-අවුරුදු තරුණ මොළය",
+                  feedbackSi: p => `මෙම මට්ටමේදී, ඔබගේ මොළයේ විධායක ක්‍රියාකාරිත්වය (Executive Function) සහ නිෂේධන පාලනය (Inhibitory Control) මූලික අවදියක පුහුණු වේ. තරුණ වියේදී පූර්ව ඉදිරිපස බාහිකය (Prefrontal Cortex - PFC) තවමත් වර්ධනය වන අතර, නිතර නිතර කරන Stroop වැනි අභ්‍යාස මගින් dorsolateral prefrontal cortex (DLPFC) සහ anterior cingulate cortex (ACC) අතර සම්බන්ධතා ශක්තිමත් කරයි. මෙය ස්නායු ප්ලාස්ටිසිටිතාවය (neuroplasticity) ලෙස හැඳින්වේ. නැවත නැවත පුහුණු වීමෙන් අවධානය සහ ආවේග පාලන හැකියාව වැඩිදියුණු වේ.` },
+                { id:2, timeLimit:3.0, congruentPct:45, nameEn:"University student", descSi:"සරසවි ශිෂ්‍යයෙකුගේ මොළය",
+                  feedbackSi: p => `මෙම මට්ටමේදී, අවධානය බෙදීම සහ නිෂේධන පාලනය (Inhibitory Control) සඳහා වැඩි ඉල්ලුමක් පවතී. විශ්ව විද්‍යාල ශිෂ්‍යයෙකුගේ මොළය නිරන්තරයෙන් නව තොරතුරු සමඟ කටයුතු කරන බැවින්, dorsolateral prefrontal cortex (DLPFC) හි ක්‍රියාකාරීත්වය ඉහළ මට්ටමක පවතී. මෙහිදී anterior cingulate cortex (ACC) ගැටුම් නිරාකරණයට දායක වන අතර, පුනරාවර්තන පුහුණුව තුළින් ස්නායු ප්ලාස්ටිසිටිතාවය (neuroplasticity) ඇතිවේ. එමගින් විධායක ක්‍රියාකාරිත්වය (Executive Function) ක්‍රමයෙන් ශක්තිමත් වේ.` },
+                { id:3, timeLimit:2.2, congruentPct:30, nameEn:"Graduate (general)", descSi:"උපාධිධාරියෙකුගේ මොළය",
+                  feedbackSi: p => `උපාධිධාරී මට්ටමේදී, බොහෝ දුරට අසංගත (incongruent) ප්‍රශ්න හේතුවෙන් ඉහළ නිෂේධන ඉල්ලුමක් (Inhibitory Demand) පවතී. Prefrontal Cortex (PFC) හි dorsolateral කොටස (DLPFC) සහ anterior cingulate cortex (ACC) අතර සම්බන්ධීකරණය තීරණාත්මක වේ. නිරන්තර අභියෝග හරහා ස්නායු ප්ලාස්ටිසිටිතාවය (neuroplasticity) උත්තේජනය වන අතර, එය තීරණ ගැනීමේ වේගය සහ නිරවද්‍යතාවය වැඩි දියුණු කරයි.` },
+                { id:4, timeLimit:1.5, congruentPct:15, nameEn:"Analytical professional", descSi:"විශ්ලේෂණාත්මක වෘත්තිකයෙකුගේ මොළය",
+                  feedbackSi: p => `මෙම අභියෝගාත්මක මට්ටමේදී, බොහෝ විට අසංගත (incongruent) තොරතුරු සමඟ කටයුතු කිරීමට සිදුවේ. විශ්ලේෂණාත්මක වෘත්තිකයෙකුගේ මොළය ඉහළ නිෂේධන පාලනයක් (Inhibitory Control) පෙන්නුම් කරයි. මෙහිදී dorsolateral prefrontal cortex (DLPFC) අධික ලෙස ක්‍රියාත්මක වන අතර anterior cingulate cortex (ACC) නිරන්තර ගැටුම් නිරාකරණයේ යෙදේ. මෙවැනි දැඩි පුහුණුවක් ස්නායු ප්ලාස්ටිසිටිතාවය (neuroplasticity) උපරිම කරමින් සංජානන කාර්යක්ෂමතාව (cognitive efficiency) ඉහළ නංවයි.` },
+                { id:5, timeLimit:1.1, congruentPct:10, nameEn:"Engineering/Math specialist", descSi:"ඉංජිනේරු/ගණිත විශේෂඥයෙකුගේ මොළය",
+                  feedbackSi: p => `මෙම අතිශය දුෂ්කර මට්ටමේදී, ඉතා කෙටි කාල සීමාවක් තුළ අසංගත (incongruent) ප්‍රශ්න බහුලව පවතී. ඉංජිනේරු හෝ ගණිත විශේෂඥයෙකුගේ මොළය උසස් නිෂේධන පාලනයක් (Inhibitory Control) සහ වේගවත් ගැටුම් නිරාකරණයක් පෙන්නුම් කරයි. dorsolateral prefrontal cortex (DLPFC) සහ anterior cingulate cortex (ACC) අතිශය ක්‍රියාකාරීව කටයුතු කරන අතර, දිගුකාලීන පුහුණුව තුළින් ඇතිවන ස්නායු ප්ලාස්ටිසිටිතාවය (neuroplasticity) මගින් synaptic connections ශක්තිමත් වී ඇත. මෙය එදිනෙදා තීරණ ගැනීම් වලදී පවා අතිශය ඉහළ සංජානන කාර්යක්ෂමතාවයක් (cognitive efficiency) ලබා දෙයි.` }
+            ];
+
+            const colors = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE'];
+            const colorMap = {
+                'RED': '#ff4d4d',
+                'BLUE': '#4d79ff',
+                'GREEN': '#4caf50',
+                'YELLOW': '#ffd700',
+                'PURPLE': '#b366ff'
+            };
+
+            // DOM
+            const startScreen = document.getElementById('start-screen');
+            const gameScreen = document.getElementById('game-screen');
+            const resultScreen = document.getElementById('result-screen');
+            const levelGrid = document.getElementById('level-grid');
+            const beginBtn = document.getElementById('begin-btn');
+            const topWordEl = document.getElementById('top-word');
+            const bottomWordEl = document.getElementById('bottom-word');
+            const timerBar = document.getElementById('timer-bar');
+            const scoreDisplay = document.getElementById('score-display');
+            const progressDisplay = document.getElementById('progress-display');
+            const feedbackEl = document.getElementById('feedback');
+            const btnTrue = document.getElementById('btn-true');
+            const btnFalse = document.getElementById('btn-false');
+            const restartGameLink = document.getElementById('restart-game');
+            const resultStats = document.getElementById('result-stats');
+            const explanationBox = document.getElementById('explanation');
+            const replayBtn = document.getElementById('replay-btn');
+            const levelSelectBtn = document.getElementById('level-select-btn');
+
+            // Game state
+            let currentLevel = null;
+            let questions = [];
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let reactionTimes = [];
+            let questionStartTime = null;
+            let timerAnimationId = null;
+            let timerVersion = 0;
+            let timeoutTriggered = false;
+            let answerLocked = false;
+            let totalCorrect = 0;
+            let previousTopInk = null;
+            let previousBottomInk = null;
+
+            // ---------- UTILS ----------
+            function shuffleArray(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            function generateQuestions(level) {
+                const qs = [];
+                const totalQ = 20;
+                for (let i = 0; i < totalQ; i++) {
+                    // pick top word
+                    const topWord = colors[Math.floor(Math.random() * colors.length)];
+                    // top ink (with congruentPct)
+                    let topInk;
+                    const randTop = Math.random() * 100;
+                    if (randTop < level.congruentPct) {
+                        topInk = topWord;
+                    } else {
+                        const others = colors.filter(c => c !== topWord);
+                        topInk = others[Math.floor(Math.random() * others.length)];
+                    }
+                    // ensure top ink differs from previous top ink (if not first)
+                    if (i > 0 && topInk === previousTopInk) {
+                        const alternates = colors.filter(c => c !== topInk);
+                        if (alternates.length > 0) topInk = alternates[Math.floor(Math.random() * alternates.length)];
+                    }
+
+                    // decide True/False (50/50)
+                    const isTrue = Math.random() < 0.5;
+                    let bottomWord;
+                    if (isTrue) {
+                        // ink of top must equal bottomWord text
+                        bottomWord = topInk;
+                    } else {
+                        // bottomWord != topInk
+                        const candidates = colors.filter(c => c !== topInk);
+                        // interference: make bottomWord often equal to topWord (if topWord != topInk)
+                        if (topWord !== topInk && Math.random() < 0.7) {
+                            bottomWord = topWord;
+                        } else {
+                            bottomWord = candidates[Math.floor(Math.random() * candidates.length)];
+                        }
+                    }
+
+                    // bottom ink (with congruentPct, but irrelevant to task)
+                    let bottomInk;
+                    const randBottom = Math.random() * 100;
+                    if (randBottom < level.congruentPct) {
+                        bottomInk = bottomWord;
+                    } else {
+                        const others = colors.filter(c => c !== bottomWord);
+                        bottomInk = others[Math.floor(Math.random() * others.length)];
+                    }
+                    if (i > 0 && bottomInk === previousBottomInk) {
+                        const alternates = colors.filter(c => c !== bottomInk);
+                        if (alternates.length > 0) bottomInk = alternates[Math.floor(Math.random() * alternates.length)];
+                    }
+
+                    // store for next question
+                    previousTopInk = topInk;
+                    previousBottomInk = bottomInk;
+
+                    qs.push({ topWord, topInk, bottomWord, bottomInk, isCorrect: isTrue });
+                }
+                return qs;
+            }
+
+            function normalCDF(x) {
+                const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+                const sign = x < 0 ? -1 : 1;
+                let absX = Math.abs(x) / Math.sqrt(2);
+                const t = 1.0 / (1.0 + p * absX);
+                const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-absX * absX);
+                return 0.5 * (1.0 + sign * y);
+            }
+
+            function percentileFromZ(z) {
+                return Math.max(0, Math.min(100, Math.round((1 - normalCDF(z)) * 100)));
+            }
+
+            // ---------- SCREENS ----------
+            function showScreen(screen) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                screen.classList.add('active');
+            }
+
+            function goToStart() {
+                stopTimer();
+                showScreen(startScreen);
+                beginBtn.disabled = true;
+                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+                currentLevel = null;
+                previousTopInk = null;
+                previousBottomInk = null;
+            }
+
+            // ---------- TIMER ----------
+            function stopTimer() {
+                if (timerAnimationId) {
+                    cancelAnimationFrame(timerAnimationId);
+                    timerAnimationId = null;
+                }
+                timerVersion++;
+            }
+
+            function startTimer(durationMs, onTimeout) {
+                stopTimer();
+                const version = ++timerVersion;
+                const startTime = performance.now();
+                questionStartTime = Date.now();
+                timeoutTriggered = false;
+                answerLocked = false;
+
+                function updateTimer(now) {
+                    if (version !== timerVersion) return;
+                    const elapsed = now - startTime;
+                    const remaining = Math.max(0, durationMs - elapsed);
+                    const percent = (remaining / durationMs) * 100;
+                    timerBar.style.width = percent + '%';
+                    if (percent > 60) timerBar.style.backgroundColor = '#4caf50';
+                    else if (percent > 30) timerBar.style.backgroundColor = '#ffb74d';
+                    else timerBar.style.backgroundColor = '#f44336';
+
+                    if (remaining <= 0 && !timeoutTriggered) {
+                        timeoutTriggered = true;
+                        stopTimer();
+                        handleTimeout();
+                    } else if (remaining > 0) {
+                        timerAnimationId = requestAnimationFrame(updateTimer);
+                    }
+                }
+                timerAnimationId = requestAnimationFrame(updateTimer);
+            }
+
+            function handleTimeout() {
+                if (answerLocked) return;
+                answerLocked = true;
+                showFeedback("⏰ කාලය අවසන්!", "#ff5252");
+                recordAnswer(false, 0);
+                setTimeout(nextQuestion, 800);
+            }
+
+            function showFeedback(msg, color) {
+                feedbackEl.textContent = msg;
+                feedbackEl.style.color = color;
+                feedbackEl.style.opacity = '1';
+                setTimeout(() => { feedbackEl.style.opacity = '0'; }, 500);
+            }
+
+            // ---------- GAME LOGIC ----------
+            function startLevel(level) {
+                currentLevel = level;
+                previousTopInk = null;
+                previousBottomInk = null;
+                questions = generateQuestions(level);
+                currentQuestionIndex = 0;
+                score = 0;
+                reactionTimes = [];
+                totalCorrect = 0;
+                updateScoreAndProgress();
+                showScreen(gameScreen);
+                displayQuestion();
+            }
+
+            function getCurrentTimeLimit() {
+                let t = currentLevel.timeLimit - (currentQuestionIndex * 0.05);
+                return Math.max(0.3, t);
+            }
+
+            function displayQuestion() {
+                if (currentQuestionIndex >= questions.length) {
+                    endLevel();
+                    return;
+                }
+                const q = questions[currentQuestionIndex];
+                topWordEl.textContent = q.topWord;
+                topWordEl.style.color = colorMap[q.topInk];
+                bottomWordEl.textContent = q.bottomWord;
+                bottomWordEl.style.color = colorMap[q.bottomInk];
+
+                updateScoreAndProgress();
+                timerBar.style.width = '100%';
+                timerBar.style.backgroundColor = '#4caf50';
+                answerLocked = false;
+                timeoutTriggered = false;
+
+                const timeMs = getCurrentTimeLimit() * 1000;
+                startTimer(timeMs, handleTimeout);
+            }
+
+            function recordAnswer(isCorrect, rt) {
+                if (isCorrect) {
+                    totalCorrect++;
+                    const timeLimitMs = getCurrentTimeLimit() * 1000;
+                    const remaining = Math.max(0, timeLimitMs - rt);
+                    const speedBonus = Math.floor((remaining / timeLimitMs) * 50);
+                    score += 100 + speedBonus;
+                    reactionTimes.push(rt);
+                }
+                updateScoreAndProgress();
+            }
+
+            function updateScoreAndProgress() {
+                scoreDisplay.textContent = `ලකුණු: ${score}`;
+                progressDisplay.textContent = `ප්‍රශ්නය ${currentQuestionIndex+1}/20 – ${currentLevel.descSi}`;
+            }
+
+            function handleAnswer(userSaysMatch) {
+                if (answerLocked || timeoutTriggered) return;
+                stopTimer();
+                answerLocked = true;
+
+                const q = questions[currentQuestionIndex];
+                const correct = q.isCorrect; // topInk == bottomWord?
+                const isCorrect = (userSaysMatch === correct);
+                const rt = Date.now() - questionStartTime;
+
+                recordAnswer(isCorrect, rt);
+                const bonus = isCorrect ? Math.floor(((getCurrentTimeLimit()*1000 - rt) / (getCurrentTimeLimit()*1000)) * 50) : 0;
+                showFeedback(isCorrect ? `✓ නිවැරදියි! +${100 + bonus}` : '✗ වැරදියි', isCorrect ? '#69f0ae' : '#ff5252');
+                setTimeout(nextQuestion, 800);
+            }
+
+            function nextQuestion() {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    displayQuestion();
+                } else {
+                    endLevel();
+                }
+            }
+
+            function endLevel() {
+                stopTimer();
+                const total = questions.length;
+                const accuracy = totalCorrect / total * 100;
+                let meanRT = 0;
+                if (reactionTimes.length > 0) {
+                    meanRT = reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length;
+                } else {
+                    meanRT = 2000;
+                }
+                const z = (meanRT - 800) / 150;
+                const effectiveZ = z + (100 - accuracy) * 0.03;
+                const percentile = percentileFromZ(effectiveZ);
+
+                resultStats.innerHTML = `
+                    <div class="stat">📊 <strong>මට්ටම:</strong> ${currentLevel.descSi} (${currentLevel.nameEn})</div>
+                    <div class="stat">🎯 <strong>නිරවද්‍යතාව:</strong> ${accuracy.toFixed(1)}%</div>
+                    <div class="stat">⏱️ <strong>සාමාන්‍ය ප්‍රතිචාර කාලය (නිවැරදි):</strong> ${reactionTimes.length ? meanRT.toFixed(0) : 'N/A'} ms</div>
+                    <div class="stat" style="font-size:1.5rem; color:#ffd86f;">✨ ඔබගේ කාර්ය සාධනය සාමාන්‍ය පුද්ගලයන්ගෙන් ${percentile}% ට වඩා ඉහළයි</div>
+                `;
+                explanationBox.innerHTML = currentLevel.feedbackSi(percentile);
+                showScreen(resultScreen);
+            }
+
+            // ---------- EVENT LISTENERS ----------
+            levels.forEach(level => {
+                const btn = document.createElement('div');
+                btn.className = 'level-btn';
+                btn.innerHTML = `<div class="level-num">${level.id}</div><div class="level-desc">${level.descSi} <small>${level.nameEn}</small></div>`;
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    currentLevel = level;
+                    beginBtn.disabled = false;
+                });
+                levelGrid.appendChild(btn);
+            });
+
+            beginBtn.addEventListener('click', () => {
+                if (!currentLevel) return;
+                startLevel(currentLevel);
+            });
+
+            btnTrue.addEventListener('click', () => handleAnswer(true));
+            btnFalse.addEventListener('click', () => handleAnswer(false));
+
+            restartGameLink.addEventListener('click', () => {
+                stopTimer();
+                goToStart();
+            });
+
+            replayBtn.addEventListener('click', () => {
+                if (currentLevel) startLevel(currentLevel);
+            });
+
+            levelSelectBtn.addEventListener('click', () => {
+                goToStart();
+            });
+
+            // Initialize
+            goToStart();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K3nfold✨ · A/L Biology</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f3ee;--bg2:#eeede6;--inv:#191817;
+  --t1:#191817;--t2:#5a554e;--tm:#8a847a;
+  --acc:#c96442;--ach:#b55738;--acs:#e89268;
+  --bdr:#d8d3c8;--sw:264px;--r:6px;--tr:0.2s ease;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:17px;scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;-webkit-font-smoothing:antialiased;}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+
+/* SIDEBAR */
+#sb{position:fixed;left:0;top:0;bottom:0;width:var(--sw);background:var(--inv);display:flex;flex-direction:column;z-index:200;transition:width var(--tr);overflow:hidden;}
+#sb.col{width:52px}
+.sb-h{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;min-height:64px;flex-shrink:0;}
+.sb-lo{width:30px;height:30px;flex-shrink:0;background:var(--acc);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:#fff;}
+.sb-br{overflow:hidden;white-space:nowrap;transition:opacity var(--tr),width var(--tr)}
+.sb-n{font-family:'Playfair Display',serif;font-size:14px;font-weight:500;color:#f4f3ee;}
+.sb-s{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-top:1px;}
+#sb.col .sb-br{opacity:0;width:0}
+.sb-tg{position:absolute;right:-14px;top:32px;width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;color:var(--t2);font-size:13px;transition:var(--tr);z-index:201;cursor:pointer;}
+.sb-tg:hover{background:var(--bg);color:var(--t1)}
+.sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0}
+.sb-nav::-webkit-scrollbar{width:3px}.sb-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+.sb-sl{padding:16px 16px 4px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);white-space:nowrap;transition:opacity var(--tr);}
+#sb.col .sb-sl{opacity:0;height:0;padding:0;overflow:hidden}
+.sb-i{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;position:relative;white-space:nowrap;transition:background var(--tr);}
+.sb-i:hover{background:rgba(255,255,255,0.04)}
+.sb-i.act{background:rgba(201,100,66,0.12)}
+.sb-i.act::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--acc);}
+.sb-ic{width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.sb-lb{font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);transition:opacity var(--tr),width var(--tr);overflow:hidden;}
+.sb-i.act .sb-lb{color:rgba(255,255,255,0.9)}
+#sb.col .sb-lb{opacity:0;width:0}
+.sb-sub{overflow:hidden}
+.sb-si{padding:6px 16px 6px 54px;cursor:pointer;font-size:11px;color:rgba(255,255,255,0.3);white-space:nowrap;transition:color var(--tr),background var(--tr);}
+.sb-si:hover{color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.02)}
+.sb-si.act{color:var(--acs)}
+#sb.col .sb-sub{display:none!important}
+.sb-ft{padding:14px 16px;border-top:1px solid rgba(255,255,255,0.06);font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);line-height:2;white-space:nowrap;transition:opacity var(--tr);}
+#sb.col .sb-ft{opacity:0}
+.sb-ft a{color:rgba(201,100,66,0.5)}.sb-ft a:hover{color:var(--acs)}
+
+/* MAIN */
+#mn{margin-left:var(--sw);min-height:100vh;transition:margin-left var(--tr);}
+#sb.col~#mn{margin-left:52px}
+.view{display:none}.view.active{display:block}
+
+/* FLASHCARD HEADER */
+.fc-hd{background:var(--inv);padding:48px 64px 40px;position:relative;overflow:hidden;}
+.fc-hd::after{content:'';position:absolute;right:64px;top:50%;transform:translateY(-50%);width:2px;height:60%;background:var(--acc);opacity:0.4;}
+.fc-ey{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--acs);margin-bottom:12px;}
+.fc-tt{font-family:'Playfair Display',serif;font-size:clamp(22px,4vw,40px);font-weight:500;color:#f4f3ee;letter-spacing:-0.015em;text-wrap:balance;line-height:1.15;margin-bottom:16px;}
+.fc-mt{display:flex;gap:32px;flex-wrap:wrap;}
+.fc-mi{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.3);}
+.fc-mi span{color:rgba(255,255,255,0.7);font-size:13px;font-family:'Inter',sans-serif;margin-right:4px;}
+
+/* SET BAR */
+.set-bar{padding:20px 64px;border-bottom:1px solid var(--bdr);display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--bg);}
+.set-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-right:4px;flex-shrink:0;}
+.set-b{padding:5px 14px;border-radius:var(--r);border:1px solid var(--bdr);font-size:12px;font-weight:500;color:var(--t2);background:transparent;transition:var(--tr);}
+.set-b:hover{background:var(--bg2);color:var(--t1)}.set-b.act{background:var(--acc);border-color:var(--acc);color:#fff;}
+
+/* CARD ZONE */
+.cz{padding:48px 64px;display:flex;flex-direction:column;align-items:center;gap:28px;background:var(--bg);}
+.pw{width:100%;max-width:640px}
+.pr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.pc{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tm);}
+.shp{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 10px;border-radius:20px;border:1px solid var(--bdr);color:var(--tm);cursor:pointer;transition:var(--tr);}
+.shp.on{border-color:var(--acc);color:var(--acc);background:rgba(201,100,66,0.05);}
+.pt{height:2px;background:var(--bdr);border-radius:2px;overflow:hidden;}
+.pf{height:100%;background:var(--acc);border-radius:2px;transition:width 0.4s ease;}
+
+/* THE CARD */
+.cs{perspective:1400px;width:100%;max-width:640px;height:360px;cursor:pointer;}
+.card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.65s cubic-bezier(0.4,0,0.2,1);}
+.card.fl{transform:rotateY(180deg)}
+.cf{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:8px;overflow:hidden;}
+.cfr{background:var(--inv);border:1px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;}
+.cfr::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 29px,rgba(255,255,255,0.025) 29px,rgba(255,255,255,0.025) 30px);}
+.cfr::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(90deg,var(--acc),rgba(201,100,66,0));opacity:0.6;z-index:2;}
+.cbk{background:var(--bg2);transform:rotateY(180deg);border:1px solid var(--bdr);display:flex;flex-direction:column;}
+.cbk::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 29px,rgba(25,24,23,0.04) 29px,rgba(25,24,23,0.04) 30px);}
+.cbk::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(90deg,rgba(25,24,23,0.12),transparent);z-index:2;}
+.ch{padding:14px 22px 12px 28px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:3;border-bottom:1px solid rgba(255,255,255,0.05);}
+.cbk .ch{border-bottom:1px solid rgba(25,24,23,0.08);}
+.cn{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--acs);letter-spacing:1px;}
+.cbk .cn{color:var(--tm)}
+.ctg{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
+.cbk .ctg{color:var(--tm)}
+.cb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 40px 20px 46px;position:relative;z-index:3;gap:16px;}
+.cr{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);align-self:flex-start;}
+.cbk .cr{color:var(--tm)}
+.ct{font-family:'Playfair Display',serif;font-size:clamp(18px,3vw,26px);font-weight:500;color:#f4f3ee;text-align:center;letter-spacing:-0.01em;line-height:1.3;font-style:italic;text-wrap:balance;}
+.chi{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.15);margin-top:4px;}
+.cd{font-family:'Inter',sans-serif;font-size:15px;color:var(--t1);line-height:1.65;text-align:center;text-wrap:pretty;max-width:520px;}
+
+/* CONTROLS */
+.cc{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.ctl{padding:9px 20px;border-radius:var(--r);font-size:13px;font-weight:500;border:1px solid var(--bdr);color:var(--t2);background:transparent;transition:var(--tr);}
+.ctl:hover{background:var(--bg2);color:var(--t1)}
+.ctl.p{background:var(--acc);border-color:var(--acc);color:#fff;}
+.ctl.p:hover{background:var(--ach);border-color:var(--ach);}
+
+/* PAGE HEADER */
+.ph{background:var(--inv);padding:48px 64px 0;}
+.pe{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--tm);margin-bottom:10px;}
+.pht{font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,40px);font-weight:500;color:#f4f3ee;letter-spacing:-0.015em;margin-bottom:4px;text-wrap:balance;}
+.ps{font-size:15px;color:rgba(255,255,255,0.4);margin-bottom:32px;}
+
+/* OVERVIEW STRIP */
+.ovs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,0.08);}
+.ovc{padding:24px 32px;border-right:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:background var(--tr);}
+.ovc:last-child{border-right:none}.ovc:hover{background:rgba(255,255,255,0.04)}
+.ovn{font-family:'Playfair Display',serif;font-size:36px;font-weight:500;color:var(--acc);line-height:1;margin-bottom:4px;}
+.ovl{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;}
+.ovt{font-family:'Playfair Display',serif;font-size:12px;font-weight:500;color:rgba(255,255,255,0.4);margin-top:6px;line-height:1.3;}
+
+/* INFO BODY */
+.ib{padding:56px 64px;background:var(--bg);display:flex;flex-direction:column;gap:72px;}
+.ct2{font-family:'Playfair Display',serif;font-size:26px;font-weight:500;color:var(--t1);letter-spacing:-0.01em;margin-bottom:4px;}
+.cs2{font-size:14px;color:var(--tm);margin-bottom:28px;}
+
+/* BAR CHART */
+.bc{display:flex;flex-direction:column;gap:16px;max-width:640px;}
+.br{display:flex;align-items:center;gap:16px;}
+.bul{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--tm);width:60px;flex-shrink:0;text-align:right;}
+.bw{flex:1;height:40px;background:var(--bg2);border-radius:4px;overflow:hidden;position:relative;}
+.bf{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:14px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1);}
+.bfl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;color:#fff;white-space:nowrap;}
+.bct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tm);width:32px;flex-shrink:0;}
+
+/* DONUT */
+.ds{display:grid;grid-template-columns:240px 1fr;gap:56px;align-items:center;}
+.dw{position:relative;width:200px;height:200px;}
+.dw svg{transform:rotate(-90deg);}
+.dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+.db{font-family:'Playfair Display',serif;font-size:32px;font-weight:500;color:var(--t1);}
+.dsm{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--tm);}
+.dl{display:flex;flex-direction:column;gap:16px;}
+.li{display:flex;align-items:center;gap:12px;}
+.ld{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.lu{font-size:14px;font-weight:500;color:var(--t1);}
+.ldt{font-size:12px;color:var(--tm);}
+
+/* HEATMAP */
+.hg{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;max-width:680px;}
+.hc{padding:10px 12px;border-radius:3px;font-size:11px;color:var(--t2);line-height:1.4;transition:opacity var(--tr);}
+.hc:hover{opacity:0.8}
+.hl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;color:var(--tm);display:block;margin-bottom:2px;}
+
+/* TOPIC CLUSTERS */
+.tch{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bdr);}
+.tcd{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.tcn{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:var(--t1);}
+.tcc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tm);margin-left:auto;}
+.tt{display:flex;flex-wrap:wrap;gap:6px;}
+.tg{padding:4px 12px;border-radius:20px;border:1px solid var(--bdr);font-size:12px;color:var(--t2);background:transparent;}
+
+/* REPORT */
+.rb{padding:48px 64px;max-width:900px;}
+.rs{margin-bottom:64px;}
+.rst{font-family:'Playfair Display',serif;font-size:26px;font-weight:500;color:var(--t1);letter-spacing:-0.01em;margin-bottom:6px;}
+.rss{font-size:14px;color:var(--tm);margin-bottom:28px;}
+.rq{border-left:2px solid var(--acc);padding:4px 0 4px 20px;margin:24px 0;}
+.rq p{font-family:'Playfair Display',serif;font-size:17px;font-style:italic;color:var(--t2);line-height:1.6;}
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:28px;}
+.rc{background:var(--bg2);border-radius:8px;padding:20px;}
+.rct{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:12px;display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;text-transform:uppercase;}
+.rcd{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.rl{display:flex;flex-direction:column;gap:6px;}
+.rl li{font-size:14px;color:var(--t2);display:flex;gap:10px;align-items:flex-start;line-height:1.5;}
+.rl li::before{content:'—';color:var(--bdr);flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:2px;}
+.rtbl{width:100%;border-collapse:collapse;margin-bottom:28px;}
+.rtbl th{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);padding:10px 14px;text-align:left;border-bottom:1px solid var(--bdr);}
+.rtbl td{font-size:13px;color:var(--t2);padding:12px 14px;border-bottom:1px solid rgba(216,211,200,0.5);vertical-align:top;line-height:1.5;}
+.rtbl tr:nth-child(even) td{background:var(--bg2);}
+.rtbl td:first-child{font-family:'Playfair Display',serif;font-size:15px;font-weight:500;color:var(--t1);}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px;margin-top:24px;}
+.sk{background:var(--bg2);padding:20px;}
+.slv{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:8px;}
+.sdc{font-size:13px;color:var(--t2);line-height:1.6;}
+
+/* TOAST */
+#tst{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--inv);border:1px solid rgba(201,100,66,0.3);border-radius:6px;padding:12px 22px;font-size:13px;color:rgba(255,255,255,0.8);display:flex;gap:10px;align-items:center;transition:transform 0.35s ease;z-index:999;box-shadow:0 8px 24px rgba(25,24,23,0.08);}
+#tst.show{transform:translateX(-50%) translateY(0)}
+
+/* MOBILE */
+#mbb{display:none;position:fixed;top:14px;left:14px;z-index:300;width:38px;height:38px;border-radius:6px;background:var(--inv);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-size:15px;align-items:center;justify-content:center;}
+#ov{display:none;position:fixed;inset:0;background:rgba(25,24,23,0.5);z-index:199;}
+@media(max-width:768px){
+  #mbb{display:flex}
+  #sb{transform:translateX(-100%)}
+  #sb.mob{transform:translateX(0)}
+  #ov.active{display:block}
+  #mn{margin-left:0!important}
+  .fc-hd,.cz,.set-bar,.ph,.ib,.rb{padding-left:20px;padding-right:20px}
+  .ovs{grid-template-columns:repeat(2,1fr)}
+  .ovc{padding:16px 20px}
+  .ds{grid-template-columns:1fr}
+  .hg{grid-template-columns:repeat(2,1fr)}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<button id="mbb" onclick="tmob()">☰</button>
+<div id="ov" onclick="tmob()"></div>
+
+<aside id="sb">
+  <div class="sb-h">
+    <div class="sb-lo">K³</div>
+    <div class="sb-br"><div class="sb-n">K3nfold✨</div><div class="sb-s">A/L BIOLOGY</div></div>
+  </div>
+  <button class="sb-tg" id="sbt" onclick="tsb()">‹</button>
+  <nav class="sb-nav">
+    <div class="sb-sl">Flash Cards</div>
+    <div class="sb-i act" data-v="fc" data-u="1" onclick="nvc(this)"><div class="sb-ic">①</div><span class="sb-lb">Unit 01 · ජීව විද්‍යාව</span></div>
+    <div class="sb-sub" id="sub1">
+      <div class="sb-si act" onclick="ssc(1,0,this)">සියල්ල (11)</div>
+      <div class="sb-si" onclick="ssc(1,1,this)">Set 01 · 1–10</div>
+      <div class="sb-si" onclick="ssc(1,2,this)">Set 02 · 11</div>
+    </div>
+    <div class="sb-i" data-v="fc" data-u="2" onclick="nvc(this)"><div class="sb-ic">②</div><span class="sb-lb">Unit 02 · රසායනික</span></div>
+    <div class="sb-sub" id="sub2" style="display:none">
+      <div class="sb-si act" onclick="ssc(2,0,this)">සියල්ල (79)</div>
+      <div class="sb-si" onclick="ssc(2,1,this)">Set 01 · 1–10</div>
+      <div class="sb-si" onclick="ssc(2,2,this)">Set 02 · 11–20</div>
+      <div class="sb-si" onclick="ssc(2,3,this)">Set 03 · 21–30</div>
+      <div class="sb-si" onclick="ssc(2,4,this)">Set 04 · 31–40</div>
+      <div class="sb-si" onclick="ssc(2,5,this)">Set 05 · 41–50</div>
+      <div class="sb-si" onclick="ssc(2,6,this)">Set 06 · 51–60</div>
+      <div class="sb-si" onclick="ssc(2,7,this)">Set 07 · 61–70</div>
+      <div class="sb-si" onclick="ssc(2,8,this)">Set 08 · 71–79</div>
+    </div>
+    <div class="sb-i" data-v="fc" data-u="3" onclick="nvc(this)"><div class="sb-ic">③</div><span class="sb-lb">Unit 03 · පරිණාමය</span></div>
+    <div class="sb-sub" id="sub3" style="display:none">
+      <div class="sb-si act" onclick="ssc(3,0,this)">සියල්ල (31)</div>
+      <div class="sb-si" onclick="ssc(3,1,this)">Set 01 · 1–10</div>
+      <div class="sb-si" onclick="ssc(3,2,this)">Set 02 · 11–20</div>
+      <div class="sb-si" onclick="ssc(3,3,this)">Set 03 · 21–31</div>
+    </div>
+    <div class="sb-i" data-v="fc" data-u="4" onclick="nvc(this)"><div class="sb-ic">④</div><span class="sb-lb">Unit 04 · ශාක ආකාරය</span></div>
+    <div class="sb-sub" id="sub4" style="display:none">
+      <div class="sb-si act" onclick="ssc(4,0,this)">සියල්ල (100)</div>
+      <div class="sb-si" onclick="ssc(4,1,this)">Set 01 · 1–10</div>
+      <div class="sb-si" onclick="ssc(4,2,this)">Set 02 · 11–20</div>
+      <div class="sb-si" onclick="ssc(4,3,this)">Set 03 · 21–30</div>
+      <div class="sb-si" onclick="ssc(4,4,this)">Set 04 · 31–40</div>
+      <div class="sb-si" onclick="ssc(4,5,this)">Set 05 · 41–50</div>
+      <div class="sb-si" onclick="ssc(4,6,this)">Set 06 · 51–60</div>
+      <div class="sb-si" onclick="ssc(4,7,this)">Set 07 · 61–70</div>
+      <div class="sb-si" onclick="ssc(4,8,this)">Set 08 · 71–80</div>
+      <div class="sb-si" onclick="ssc(4,9,this)">Set 09 · 81–90</div>
+      <div class="sb-si" onclick="ssc(4,10,this)">Set 10 · 91–100</div>
+    </div>
+    <div class="sb-sl">දෘශ්‍ය</div>
+    <div class="sb-i" data-v="info" onclick="nvc(this)"><div class="sb-ic">◈</div><span class="sb-lb">Infographic</span></div>
+    <div class="sb-sub" id="subinfo" style="display:none">
+      <div class="sb-si" onclick="sc2('ov-s')">සාරාංශය</div>
+      <div class="sb-si" onclick="sc2('ch-b')">ගණන් සංසන්දනය</div>
+      <div class="sb-si" onclick="sc2('ch-d')">ව්‍යාප්තිය</div>
+      <div class="sb-si" onclick="sc2('ch-t')">මාතෘකා</div>
+    </div>
+    <div class="sb-sl">විශ්ලේෂණය</div>
+    <div class="sb-i" data-v="rep" onclick="nvc(this)"><div class="sb-ic">≡</div><span class="sb-lb">Report</span></div>
+    <div class="sb-sub" id="subrep" style="display:none">
+      <div class="sb-si" onclick="sc2('r-sum')">සමස්ත</div>
+      <div class="sb-si" onclick="sc2('r-u1')">Unit 01</div>
+      <div class="sb-si" onclick="sc2('r-u2')">Unit 02</div>
+      <div class="sb-si" onclick="sc2('r-u3')">Unit 03</div>
+      <div class="sb-si" onclick="sc2('r-u4')">Unit 04</div>
+      <div class="sb-si" onclick="sc2('r-str')">ඉගෙනීමේ ක්‍රමය</div>
+    </div>
+  </nav>
+  <div class="sb-ft"><a href="https://t.me/k3N_edu" target="_blank" style="text-decoration:none;color:inherit">K3nfold✨</a><br>කේතය · Claude AI</div>
+</aside>
+
+<main id="mn">
+<!-- FLASHCARD VIEW -->
+<div class="view active" id="fc-view">
+  <div class="fc-hd">
+    <div class="fc-ey" id="fc-ey">UNIT 01</div>
+    <h1 class="fc-tt" id="fc-tt">ජීව විද්‍යාව හඳුන්වා දීම</h1>
+    <div class="fc-mt">
+      <div class="fc-mi"><span id="fc-tot">11</span>කාඩ්</div>
+      <div class="fc-mi"><span id="fc-sets">2</span>Set</div>
+      <div class="fc-mi">දැන්: <span id="fc-sn">සියල්ල</span></div>
+    </div>
+  </div>
+  <div class="set-bar" id="set-bar"></div>
+  <div class="cz">
+    <div class="pw">
+      <div class="pr">
+        <span class="pc" id="plbl">1 / 11</span>
+        <button class="shp on" id="shpill" onclick="tshuf()">⟳ Shuffle: ON</button>
+      </div>
+      <div class="pt"><div class="pf" id="pfill" style="width:9%"></div></div>
+    </div>
+    <div class="cs" id="cscene" onclick="flipC()">
+      <div class="card" id="thecard">
+        <div class="cf cfr">
+          <div class="ch"><span class="cn" id="fnum">#01</span><span class="ctg" id="ftag">Unit 01</span></div>
+          <div class="cb"><span class="cr">යෙදුම</span><div class="ct" id="cterm">ජීව විද්‍යාව</div><div class="chi">click · space · →</div></div>
+        </div>
+        <div class="cf cbk">
+          <div class="ch"><span class="cn" id="bnum">#01</span><span class="ctg">නිර්වචනය</span></div>
+          <div class="cb"><span class="cr">නිර්වචනය</span><div class="cd" id="cdef">ජිවීන් පිළිබඳ අධ්‍යයනය සඳහා විශේෂ අවධානයක් සහිත විද්‍යාවයි</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cc">
+      <button class="ctl" onclick="prevC()">← පෙර</button>
+      <button class="ctl p" onclick="nextC()">ඊළඟ →</button>
+      <button class="ctl" onclick="rstC()">↺ Restart</button>
+    </div>
+  </div>
+</div>
+
+<!-- INFOGRAPHIC VIEW -->
+<div class="view" id="info-view">
+  <div class="ph">
+    <div class="pe">Visual</div>
+    <h1 class="pht">සංසන්දනාත්මක දර්ශනය</h1>
+    <p class="ps">Units 4ක් · ගණන, ව්‍යාප්තිය, ආවරණ ක්ෂේත්‍ර</p>
+    <div class="ovs" id="ov-s"></div>
+  </div>
+  <div class="ib">
+    <div id="ch-b">
+      <div class="ct2">Unit එකකට ඇති නිර්වචන ගණන</div>
+      <div class="cs2">Unit 04 ශාක ආකාරය — ඉහළම · Unit 01 ජීව විද්‍යාව — කෙටිම</div>
+      <div class="bc" id="barchart"></div>
+    </div>
+    <div id="ch-d">
+      <div class="ct2">සමස්ත ව්‍යාප්තිය</div>
+      <div class="cs2">Units 4ක · නිර්වචන 221ක</div>
+      <div class="ds" style="margin-top:24px">
+        <div>
+          <div class="dw">
+            <svg width="200" height="200" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="75" fill="none" stroke="#eeede6" stroke-width="24"/>
+              <circle id="d1" cx="100" cy="100" r="75" fill="none" stroke="#c96442" stroke-width="24" stroke-dasharray="471" stroke-dashoffset="447"/>
+              <circle id="d2" cx="100" cy="100" r="75" fill="none" stroke="#c98a42" stroke-width="24" stroke-dasharray="471" stroke-dashoffset="471"/>
+              <circle id="d3" cx="100" cy="100" r="75" fill="none" stroke="#6b7a3d" stroke-width="24" stroke-dasharray="471" stroke-dashoffset="471"/>
+              <circle id="d4" cx="100" cy="100" r="75" fill="none" stroke="#8a847a" stroke-width="24" stroke-dasharray="471" stroke-dashoffset="471"/>
+            </svg>
+            <div class="dc"><div class="db">221</div><div class="dsm">TERMS</div></div>
+          </div>
+        </div>
+        <div class="dl" id="dlegend"></div>
+      </div>
+    </div>
+    <div>
+      <div class="ct2">සංකල්ප ඝනත්ව සිතියම</div>
+      <div class="cs2" style="margin-bottom:20px">Set 10කට ගොනු කළ නිර්වචන · ගාඪ = වැඩි</div>
+      <div class="hg" id="hmgrid"></div>
+    </div>
+    <div id="ch-t">
+      <div class="ct2">ආවරණ ක්ෂේත්‍ර සංසන්දනය</div>
+      <div class="cs2" style="margin-bottom:28px">Unit 4ක ප්‍රධාන මාතෘකා කාණ්ඩ</div>
+      <div style="display:flex;flex-direction:column;gap:32px" id="tclusters"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT VIEW -->
+<div class="view" id="rep-view">
+  <div class="ph">
+    <div class="pe">Report</div>
+    <h1 class="pht">සවිස්තරාත්මක විශ්ලේෂණය</h1>
+    <p class="ps">A/L ජීව විද්‍යාව · Units 4 · K3nfold✨</p>
+    <div style="height:32px"></div>
+  </div>
+  <div class="rb" id="repbody"></div>
+</div>
+</main>
+
+<div id="tst"><span style="color:var(--acc)">✓</span><span id="tmsg">Set සම්පූර්ණයි!</span></div>
+
+<script>
+const D={
+1:{title:"ජීව විද්‍යාව හඳුන්වා දීම",acc:"#c96442",cards:[
+["ජීව විද්‍යාව","ජිවීන් පිළිබඳ අධ්‍යයනය සඳහා විශේෂ අවධානයක් සහිත විද්‍යාවයි"],
+["සේවාභාවික සම්පත්","එදිනෙදා ජිවිතයට හා ආර්ථික සංවර්ධනයට භාවිත වන සේවාභාවික හමුවන ද්‍රව්‍ය සහ ශක්තීන් වල ප්‍රභව වේ"],
+["තිරසර ආහාර නිෂ්පාදනය","මානව ජනගහනයට ප්‍රමාණවත් තරම් ආහාර ප්‍රමාණයක් පරිසර සුරක්ෂිත ක්‍රම භාවිතයෙන් නිෂ්පාදනය"],
+["පරිවෘත්තීය","ජිවීන් තුළ සිදුවන සියලු රසායනික ක්‍රියාවල සමස්තය"],
+["වර්ධනය","අප්‍රතිවර්තය ලෙස සිදුවන වියළි ස්කන්ධයෙහි වැඩිවීම"],
+["විකසනය","ජීවියකුගේ ජීවිත කාලය තුළ දී සිදුවන සියලු අප්‍රතිවර්තය වෙනස්වීම්"],
+["උද්දීප්‍යතාව","බාහිර හා අභ්‍යන්තර පරිසර වලින් පැමිණෙන උත්තේජ වලට ප්‍රතිචාර දැක්වීමට ඇති හැකියාව"],
+["අනුවර්තනය","ජිවියෙකු ජීවත්වන සුවිශේෂී පරිසරයට අනුකූලව එම ජීවියාගේ පැවැත්ම හා ප්‍රජනනයට අනුබල දෙන ව්‍යුහමය, කායිකවිද්‍යාත්මක හා චර්යාමය වෙනස් වීම් ය"],
+["ප්‍රජනනය","විශේෂයක අඛණ්ඩ පැවැත්ම තහවුරු කිරීම සඳහා නව ජනිතයන් බිහි කිරීමේ හැකියාව"],
+["පරිණාමය","ප්‍රවේණික ද්‍රව්‍ය වල සිදුවන විකිරණ වලට අනුකූලව කාලයත් සමඟ ජීවීන්ට වෙනස් වීමට ඇති හැකියාව"],
+["සෛලය","ජීවයේ මූලික ව්‍යුහමය හා කෘත්‍යමය ඒකකය"]
+]},
+2:{title:"ජීවයේ රසායනික හා සෛලීය පදනම",acc:"#c98a42",cards:[
+["ධ්‍රැවීයතාවය","අණුවක් තුළ අසමාන ලෙස ආරෝපණ ව්‍යාප්ත වීමයි"],
+["හයිඩ්‍රජන් බන්ධන","එක් ජල අණුවක සුළුවශයෙන් ධ්‍රැවීය හයිඩ්‍රජන් පරමාණුව හා යාබද ජල අණුවේ සුළුවශයෙන් ධ්‍රැවීය ඔක්සිජන් පරමාණුව අතර ඇතිවන දුර්වල ආකර්ෂණ බලය"],
+["සංසක්තිය","හයිඩ්‍රජන් බන්ධන නිසා ජල අණු අතර ඇතිවන ආකර්ෂණය"],
+["ආසක්තිය","ජල අණු හා වෙනත් ද්‍රව්‍ය අතර ඇතිවන ආකර්ෂණය"],
+["ග්ලයිකොසිඩික් බන්ධන","යාබද මොනොසැකරයිඩ අණු දෙකක් අතර සංඝනන ප්‍රතික්‍රියාවක් මගින් ජල අණුවක් පිටවීමෙන් එම අණු දෙක අතර ඇතිවන බන්ධනය"],
+["ලිපිඩ","ජලභීතික අණු සහිත විවිධාකාර කාණ්ඩයකි"],
+["සංතෘප්ත මේද","ද්විත්ව බන්ධන කිසිවක් නැති හයිඩ්‍රොකාබන් දාම සහිත සංතෘප්ත මේද අම්ල වලින් සැදී ඇති මේද වේ"],
+["අසංතෘප්ත මේද","ද්විත්ව බන්ධන එකක් හෝ වැඩි ගණනක් ඇති හයිඩ්‍රොකාබන දාම සහිත අසංතෘප්ත මේද අම්ල වලින් සැදී ඇති මේද වේ"],
+["ඇමයිනෝ අම්ල — R කාණ්ඩය හා පිට කොන්ද","R කාණ්ඩය: R සංකේතයෙන් දක්වන විචල්‍ය කාණ්ඩය (අංශ දාමය). පිට කොන්ද: අංශ දාමය හැර ඇමයිනෝ අම්ලයක ඇති අනෙක් කාණ්ඩ (H පරමාණු ද ඇතුළුව)"],
+["පෙප්ටයිඩ බන්ධනය","ඇමයිනෝ අම්ල අණු දෙකක් අතර, සංඝනන ප්‍රතික්‍රියාවක් සිදු වී එම ඇමයිනෝ අම්ල අණු දෙකම මගින් ජල අණුවක් නිදහස් කරමින් සෑදෙන බන්ධනය"],
+["ප්‍රෝටීනයේ ප්‍රාථමික ව්‍යුහය","පෙප්ටයිඩ බන්ධන මගින් සම්බන්ධ වීමෙන් රේඛීයව සකස් වූ ඇමයිනෝ අම්ලවල අනන්‍ය අනුපිළිවෙලකි"],
+["ද්විතීයික ව්‍යුහය","එකම පොලිපෙප්ටයිඩ දාමයක පිටකොන්දේ ඇති කාබොක්සිල් කාණ්ඩයේ ඔක්සිජන් පරමාණු සහ ඇමයිනෝ කාණ්ඩයට සම්බන්ධ හයිඩ්‍රජන් පරමාණු අතර ඇතිවන අන්තඃඅණුක හයිඩ්‍රජන් බන්ධන නිසා ප්‍රාථමික ව්‍යුහය තැනී ඇති තනි පොලිපෙප්ටයිඩ දාමය දඟර ගැසීමෙන් හා නැමීමෙන් සාදන්නේ ද්විතීයික ව්‍යුහයයි"],
+["තෘතීයික ව්‍යුහය","ඇමයිනෝ අම්ලවල අංශ දාම / R කාණ්ඩ අතර ඇතිවන හයිඩ්‍රජන් බන්ධන, ඩයිසල්ෆයිඩ බන්ධන, අයනික බන්ධන, ජලභීතික අන්තර්ක්‍රියා සහ වැන්ඩර්වාල්ස් අන්තර් ක්‍රියා නිසා සාමාන්‍යයෙන් ද්විතීයික පොලිපෙප්ටයිඩ දාමය පුළුල්ව නැමීමෙන් සහ එතීමෙන් ඇතිවන නිශ්චිත, සුසංහිත, අනන්‍ය වූ කෘත්‍යමය සහ ත්‍රිමාණ හැඩය"],
+["චතුර්ථ ව්‍යුහය","එක් කෘත්‍යාත්මක ප්‍රෝටීනයක් සැදීමට පොලිපෙප්ටයිඩ දාම දෙකක් හෝ කිහිපයක් එක් වේ. එහි ඇති එකිනෙකට වෙන් වූ දාම ප්‍රෝටීන උප ඒකක ලෙස හැඳින්වේ. අන්තර් අණුක හා අන්තඃ අණුක අන්තර් ක්‍රියා මගින් ඒවා එකිනෙක බැඳ තබා ගනියි"],
+["ප්‍රෝටීන විකෘතිකරණය (දුස්ස්වභාවීකරණය)","ප්‍රෝටීනයක ඇති දුර්වල රසායනික බන්ධන සහ අන්තර්ක්‍රියා වෙනස් වීමෙන් ප්‍රෝටීනයක වූ විශිෂ්ට ත්‍රිමාණ හැඩය නැති වීම"],
+["නියුක්ලෙයික් අම්ල","බහු අවයවික වන අතර පොලිනියුක්ලියෝටයිඩ ලෙස පවතී"],
+["පොස්පොඩයිඑස්ටර බන්ධන","එක් නියුක්ලියෝටයිඩයක පොස්පේට් හි ඇති -OH කාණ්ඩයක් වෙනත් නියුක්ලියෝටයිඩයක පෙන්ටෝස් සීනිවල තුන්වන කාබන් පරමාණුවලට සම්බන්ධ -OH කාණ්ඩය අතර සිදුවන සංඝනන ප්‍රතික්‍රියාවක් මගින් සාදන බන්ධනය"],
+["විශාලනය","යම් වස්තුවක ප්‍රතිබිම්බයේ ප්‍රමාණය එම වස්තුවේ සත්‍ය ප්‍රමාණයට දක්වන අනුපාතය"],
+["විභේදන බලය","එකිනෙකින් වෙන් වූ ලක්ෂ්‍ය දෙකක් ලෙස හදුනාගත හැකි එම ලක්ෂ්‍ය දෙක අතර තිබිය යුතු අවම දුර වේ"],
+["ප්ලාස්ම පටලය","සෛල ප්ලාස්මයේ පිටතම සීමාවයි"],
+["සම්පූර්ණ ප්‍රෝටීන","ප්ලාස්ම පටලයේ අහඹු ලෙස ගිලී ඇති ප්‍රෝටීන අණු"],
+["පර්යන්ත ප්‍රෝටීන","ලිපිඩ ද්විත්ව ස්තරයේ කොහෙත්ම නොගිළුණු, පටලයේ පෘෂ්ඨයට ලිහිල්ව බැඳුණු ඇතැම් ප්‍රෝටීන"],
+["බිත්ති පටල ප්‍රෝටීන","ප්ලාස්ම පටලය තුළින් සම්පූර්ණයෙන්ම විනිවිද යන ඇතැම් සම්පූර්ණ ප්‍රෝටීන"],
+["න්‍යෂ්ටිය","සාමාන්‍ය විෂ්කම්භය 5 μm වන න්‍යෂ්ටි ආවරණය ලෙස හැඳින්වෙන ද්විත්ව පටලයකින් ආවරණය වූ බොහෝ ජාන වලින් සමන්විත වඩාත් කැපී පෙනෙන ඉන්ද්‍රයිකාවකි"],
+["න්‍යෂ්ටික සිදුරු","න්‍යෂ්ටි ආවරණයේ ඇති ද්‍රව්‍ය ඇතුළු වීම පිට වීම යාමනය කිරීමට ඇති සිදුරු සංකීර්ණ"],
+["ක්‍රොමැටින්","ඉලෙක්ට්‍රෝන අන්වීක්ෂීය ඡායාරූප වලට අනුව විභාජනය නොවන සෛල තුළ විසිරුණු ගොනුවක් ලෙස දිස් වේ. එය DNA සහ ප්‍රෝටීන සංකීර්ණයකි"],
+["වර්ණදේහ","න්‍යෂ්ටි විභාජනය සිදුවන විට ක්‍රොමැටින් ඝන වී තදින් දඟර ගැසී පත්වන නූල් වැනි ව්‍යුහ"],
+["රයිබොසෝම","ප්‍රෝටීන සංස්ලේෂණය කරන උපසෛලීය සංඝටකයකි. උප ඒකක දෙකකින් සෑදී ඇත"],
+["අන්තඃප්ලාස්මීය ජාලිකා","අභ්‍යන්තර පටල මගින් සාදන පැතලි හෝ නාලාකාර මඩි ජාලයකි"],
+["ගොල්ගි උපකරණය","පැතලි මඩි හෝ ආශයිකා එක මත එක පිහිටි ගොනුවකි"],
+["ලයිසොසෝම","ජීරණ ක්‍රියාකාරිත්වයක් ඉටු කිරීමට දායක වන තනි පටලයකින් වටවූ ආශයිකාවකි"],
+["පෙරොක්සිසෝම","ඔක්සිකරණ එන්සයිම සහිත තනි පටල වලින් වට වූ ආශයිකා වේ"],
+["හරිතලවය","ශාකවල සහ සමහර ප්‍රොටිස්ටාවන් තුළ හමු වන, ද්විඋත්තල කාචයක හැඩය ඇති පටල දෙකකින් වට වූ ඉන්ද්‍රයිකාවකි"],
+["පූරකය (ස්ට්‍රෝමාව)","තයිලකොයිඩ වලට පිටතින් ඇති තරලය"],
+["සෛලීය සැකිල්ල","සෛලයේ හැඩය පවත්වාගෙන යෑමට ආධාර කරන සන්ධාරක ව්‍යුහයකි"],
+["කේන්ද්‍රිකා","සිලින්ඩරාකාරව සකස් වූ ක්ෂුද්‍ර නාලිකා වලින් සෑදුණු පටල වලින් වට නොවූ සත්ත්ව සෛල වල පමණක් පවතින උපසෛලීය සංඝටකයකි"],
+["කේන්ද්‍රදේහය","න්‍යෂ්ටියට ආසන්නව එකිනෙකට ලම්බකව සැකසුණ කේන්ද්‍රිකා යුගලක් පිහිටි ප්‍රදේශය කේන්ද්‍රදේහයක් ලෙස හැඳින් වේ"],
+["මධ්‍ය රික්තකය","ශාක සෛල තුළ හමුවන සෛල යුෂය ලෙස හදුන්වන තරලයකින් පිරුණු තානප්ලාස්මයෙන් වට වූ විශාල ව්‍යුහයකි"],
+["සෛල බිත්තිය","ශාක සෛලවල ඇති බහිෂ්සෛලීය ව්‍යුහයකි"],
+["මධ්‍ය සූත්‍රය (මධ්‍ය පටලය)","ප්‍රාථමික සෛල බිත්තියට වහාම පිටතින් පෙක්ටීන් ලෙස හදුන්වන ඇලෙන සුලු පොලිසැකරයිඩයකින් පොහොසත් (මැග්නීසියම් සහ කැල්සියම් පෙක්ටේට්) තුනී ස්තරයක් වේ"],
+["සෛල සන්ධි","යාබද සෛලවල සෛල ප්ලාස්ම සම්බන්ධ කරන ව්‍යුහ වේ"],
+["ප්ලාස්ම බන්ධ","සෛල බිත්ති තුළින් දිවෙන අන්වීක්ෂීය නාලිකා"],
+["සෛල චක්‍රය","එක් සෛල විභාජනයක අවසානයේ සිට ඊළඟ සෛල විභාජනයේ අවසානය තෙක් සෛලයක ජිවිත කාලයක් තුළ සිදුවන සිදුවීම් අනුපිළිවෙල සෛල චක්‍රයයි"],
+["අනූනනය","එක් මාතෘ න්‍යෂ්ටියකින් ප්‍රවේණිකව සර්වසම දුහිතෘ න්‍යෂ්ටි දෙකක් නිපදවන න්‍යෂ්ටික විභාජනයකි"],
+["මධ්‍ය කලා තලය","එක් එක් ධ්‍රැවයේ සිට සම දුරකින් පිහිටි ස්ථානය"],
+["ඌනනය","ලිංගිකව ප්‍රජනනය කරන ජීවීන් සිදු කරන වෙනස් ආකාරයක සෛල විභාජනයකි. ඌනනය ද්විගුණ මාතෘ න්‍යෂ්ටියකින් ප්‍රවේණිකව සර්වසම නොවන ඒකගුණ දුහිතෘ න්‍යෂ්ටි හතරක් සාදන න්‍යෂ්ටි විභාජන ක්‍රමයකි"],
+["උපාගමපට සංකීර්ණය","විශේෂිත ප්‍රෝටීනයක් මගින් සමජාත වර්ණදේහ දෙක තදින් එකට බැඳ තබන සිප් එකක් වැනි ව්‍යුහයකි"],
+["උපාගමය","සමජාත වර්ණදේහ යුගලනය හා භෞතිකව සම්බන්ධ වීම"],
+["අවතරණය","උපාගමයේදී සමජාත වර්ණදේහ යුගලයේ සහෝදර නොවන වර්ණදේහාංශ වල DNA අණුවේ කොටස් කැඩී, හුවමාරු වී අනුරූපී ලක්ෂ්‍ය අසලදී නැවත සම්බන්ධ වීමයි"],
+["මංසල","උපාගම පට සංකීර්ණය වෙන් වූ පසු අවතරණය සිදු වූ ලක්ෂ්‍ය (ස්ථාන)"],
+["ස්ථානාන්තරණය","මුල් ස්ථානයේ සිට දුර පිහිටීමකට පිළිකා සෛල පැතිරීම"],
+["ගඩු","ඉදිමුමක් සහ වර්ධනයක් වන අතර, ඇතැම් සුවිශේෂී ජීවීන් ආක්‍රමණය කිරීමෙන් පසුව ශාක වල විවිධ කොටස් මත විකසනය වේ"],
+["පරිවෘත්තීය ක්‍රියා","ජිවීන් තුළ සිදුවන සියළුම සජීව රසායනික ප්‍රතික්‍රියා (සියළු සංවෘත්තිය හා අපවෘත්තිය ප්‍රතික්‍රියා වලින් සමන්විත වේ)"],
+["අපවෘත්තිය ප්‍රතික්‍රියා","සංකීර්ණ අණු සරල අණු බවට බිඳ හෙළමින් නිදහස් ශක්තිය මුදා හරිමින් සිදුවන ශක්තිදායක ප්‍රතික්‍රියා"],
+["සංවෘත්තිය ප්‍රතික්‍රියා","නිදහස් ශක්තිය අවශෝෂණය කිරීමෙන් සරල අණු වලින් සංකීර්ණ අණු සාදන ශක්ති අවශෝෂක ප්‍රතික්‍රියා"],
+["ATP","සරලතම බැක්ටීරියා ඇතුළු සියළු ජිවීන්ගේ ශක්ති වාහකයයි. ATP ශක්ති හුවමාරු ක්‍රියාවලියේ සාර්වත්‍ර විනිමය වෙයි"],
+["පොස්පොරිලීකරණය","සෛලය තුළ ATP නිපදවීම"],
+["ප්‍රභා පොස්පොරිලීකරණය","ප්‍රභාසංස්ලේෂණයේදී සූර්ය ශක්තිය භාවිතයෙන් ATP සංස්ලේෂණය"],
+["උපස්තර පොස්පොරිලීකරණය","සංකීර්ණ අණු සරල අණු බවට බිඳ හෙළීමේදී නිදහස් වන ශක්තිය භාවිතයෙන් ATP සංස්ලේෂණය"],
+["ඔක්සිකාරක පොස්පොරිලීකරණය","අණු ඔක්සිකරණයෙන් නිදහස් වන ශක්තිය භාවිතයෙන් ATP සංස්ලේෂණය"],
+["එන්සයිම","සජීව උත්ප්‍රේරක ලෙස ක්‍රියා කරන මහා අණු වේ. ජිවි සෛල තුළ නිපදවෙයි"],
+["සහසාධක","සමහර එන්සයිමවල උත්ප්‍රේරක ක්‍රියාකාරීත්වයට අත්‍යවශ්‍ය වන ප්‍රෝටීන නොවන සංඝටක"],
+["උපස්තරය","එන්සයිමය ක්‍රියා කරන ප්‍රතික්‍රියකය"],
+["සක්‍රීය ස්ථානය","උපස්තරය එන්සයිමයේ විශිෂ්ට ස්ථානයකට බැඳේ. මේ ස්ථානය සක්‍රිය ස්ථානය වේ"],
+["සහ එන්සයිම","කාබනික සහසාධක වේ"],
+["ප්‍රශස්ත උෂ්ණත්වය","එන්සයිමයේ සක්‍රිය ස්ථාන හා උපස්තර අණුවල වැඩි සංඝට්ටන හේතුවෙන් ප්‍රතික්‍රියාව සිදුවීමේ අවස්ථාව යම් කිසි උෂ්ණත්වයක් දක්වා වැඩි විය හැකිය. මෙයින් පසුව ඉතා ශීඝ්‍රයෙන් එන්සයිම ක්‍රියාකාරිත්වය අඩු වේ. මේ උෂ්ණත්වය ප්‍රශස්ත උෂ්ණත්වය ලෙස හැඳින් වේ"],
+["එන්සයිම විකෘතිකරණය (දුස්ස්වභාවීකරණය)","එන්සයිමයේ සක්‍රිය ස්ථානයේ හයිඩ්‍රජන් බන්ධන, අයනික බන්ධන සහ දුර්වල රසායනික බන්ධන බිඳ වැටීම හේතුවෙන් එන්සයිමයේ සක්‍රිය ස්ථානයේ හැඩය වෙනස් වීමෙන් එන්සයිමයේ සක්‍රිය ස්ථානයේ අනුපූරක ස්වභාවය වෙනස් වේ. එන්සයිමයේ සක්‍රිය ස්ථානය හා උපස්තර අණුවල අනුපූරක බැඳීම වැළැක්වෙන අවස්ථාව"],
+["එන්සයිමයක pH පරාසය","එන්සයිමයක් මගින් උත්ප්‍රේරිත ප්‍රතික්‍රියාවක් සිදුවන පටු pH පරාසය"],
+["ප්‍රශස්ත pH අගය","ඉහළම ප්‍රතික්‍රියා ශීඝ්‍රතාවයක් ඇති pH අගය එම එන්සයිමයේ ප්‍රශස්ත pH අගයයි"],
+["එන්සයිම නිෂේධක","සමහර අණු හෝ අයන එන්සයිමයට ස්ථිර ලෙස හෝ තාවකාලිකව හෝ බැඳී එන්සයිම උපස්තර සංකීර්ණ සෑදීම වැළැක්වේ. මේ ද්‍රව්‍ය නිෂේධක ලෙස හැඳින්වේ"],
+["ප්‍රභාසංස්ලේෂක වර්ණක","දෘශ්‍ය ආලෝකය අවශෝෂණය කරන ද්‍රව්‍ය වේ"],
+["ප්‍රභා ආරක්ෂණය","අමතර අධික ආලෝක ශක්තිය අවශෝෂණය හා විසිරුවා හැරීම"],
+["අවශෝෂණ වර්ණාවලිය","වර්ණකයක් මගින් විවිධ තරංග ආයාම වලදී ආලෝකය අවශෝෂණය කරන සාපේක්ෂ ප්‍රමාණය දක්වන ප්‍රස්ථාරය"],
+["ක්‍රියා වර්ණාවලිය","ආලෝකයේ විවිධ තරංග ආයාම මගින් ප්‍රභාසංස්ලේෂණය උත්තේජනය කිරීමේ ඵලදායීත්වය පෙන්නුම් කරන ප්‍රස්ථාරය"],
+["ප්‍රභා පද්ධති","ක්ලෝරොෆිල් අණු, අනෙකුත් කාබනික අණු හා ප්‍රෝටීන හරිතලවයේ ඇති තයිලකොයිඩ පටල මත සංකීර්ණ වලට සංවිධානය වී සෑදෙන පද්ධති"],
+["සෛලීය ශ්වසනය","කාබෝහයිඩ්‍රේට වැනි කාබනික අණුවල ඇති රසායනික ශක්තිය, ඔක්සිකාරක ක්‍රියාවලියක් ඔස්සේ පියවරෙන් පියවර නිදහස් කිරීම"],
+["සවායු ශ්වසනය","අණුක ඔක්සිජන් පවතින විට, ග්ලූකෝස් වැනි ශ්වසන උපස්තර යොදාගෙන ATP සංස්ලේෂණය කිරීමේ ක්‍රියාවලිය"],
+["නිර්වායු ශ්වසනය","අණුක ඔක්සිජන් නැති විටදී ග්ලූකෝස් බිඳ දැමීම"],
+["ශ්වසන ලබ්ධිය","දෙන ලද කාලයකදී දෙන ලද ශ්වසන උපස්තරයක් සඳහා නිදහස් වූ CO2 පරිමාවට, පරිභෝජනය කරන ලද O2 පරිමාවේ අනුපාතය"]
+]},
+3:{title:"පරිණාමය හා ජීවීන්ගේ විවිධත්වය",acc:"#6b7a3d",cards:[
+["ආදී සූපය","කාබනික අණුවලින් සමන්විත ද්‍රාවණයක් ලෙස පැවති ආදී සාගරය"],
+["වහර හා අවහරය","දේහයක නිරන්තරයෙන් භාවිත කරනු ලබන අවයව ක්‍රමයෙන් විශාලව හා ශක්තිමත්ව වැඩෙන අතර, භාවිත නොකර සිටින විට ඒවා පරිහානියට පත්වෙයි"],
+["පරිචිත ලක්ෂණ සම්ප්‍රේෂණය","පරිසරයට අනුවර්තන ලෙස ජීවීහු තම කාලය තුළ දී ලක්ෂණ අත් කර ගනිති. ඔවුහූ මෙම ලක්ෂණ තම ප්‍රජනිතයන්ට සම්ප්‍රේෂණය කිරීමේ හැකියාව දරති. ඒ නිසා ජනිතයෝ එම පරිසර තුළ වඩා හොඳින් අනුවර්තිතව ජීවත් වෙති"],
+["වර්ගීකරණය","පොදු ගති ලක්ෂණ වලට අනුව ජීවීන් කාණ්ඩ වලට සැකසීම"],
+["වර්ගීකරණ විද්‍යාව","ජීවීන් වර්ගීකරණය, හඳුනා ගැනීම, නාමකරණය හා විස්තර කිරීම පිළිබඳ විද්‍යාත්මක අධ්‍යයනය. ජීවීන් ධූරාවලි අනුපිළිවෙලකට සැකසීම ද මීට ඇතුළත්ය"],
+["ස්වාභාවික වර්ගීකරණය","ජීවීන් අතර පවතින සත්‍ය බන්ධුතා පදනම් කරගෙන ජීවීන් කාණ්ඩ කිරීම"],
+["වංශ ප්‍රවේණිය","විශේෂයක හෝ විශේෂය අයත් කාණ්ඩයන්ගේ පරිණාමික ඉතිහාසය"],
+["තක්සෝනය","තක්සෝන ධූරාවලියේ ඕනෑම මට්ටමක වර්ගීකරණ ඒකකයක් තක්සෝනයක් වේ"],
+["විශේෂය — ජෛව විද්‍යාත්මක අර්ථය","සමාන ලක්ෂණ පොදුවේ දරන, අන්තර් අභිජනනයෙන් ජීවී සහ සරු ජනිතයන් නිපදවිය හැකි ජීවීන් කණ්ඩායමකි"],
+["රූප විද්‍යාත්මක විශේෂ සංකල්පය","ශරීර හැඩය සහ වෙනත් ව්‍යුහ ලක්ෂණ වැනි රූප විද්‍යාත්මක නිර්ණායක භාවිත කර ජීවී විශේෂ වෙන් කර හඳුනා ගැනීම"],
+["පරිසර විද්‍යාත්මක විශේෂ සංකල්පය","විශේෂයක් පරිසර නිකේතනය සහ විශේෂයේ සාමාජිකයන් පරිසරයේ ජීවී සහ අජීවී සංඝටක සමග සිදුකරන අන්තර් ක්‍රියා සියල්ලෙහි එකතුව සලකා බලමින් අර්ථ දැක්වීම"],
+["වංශ ප්‍රවේණික විශේෂ සංකල්පය","පොදු පූර්වජයකුගෙන් පැවත එන ඒකකයන්ගේ කුඩාම කණ්ඩායම විශේෂය ලෙස අර්ථ දක්වයි"],
+["ගණ නාමය හා සුළු නාමය","ගණ නාමය: විශේෂය අයත් වන ගණයේ නාමය වන අතර මෙය නාම පදයකි. සුළු නාමය: යම් සුවිශේෂී ලක්ෂණයක් විස්තර වන විශේෂණ පදයකි"],
+["සනාල ශාක","සංකීර්ණ සනාල පටක පද්ධතියක් ඇති ශාක"],
+["අසනාල ශාක","විශේෂණය වූ සනාල පටක පද්ධතියක් නැති ශාක"],
+["මුල්","ජලය හා ඛනිජ පසෙන් අවශෝෂණය කරන හා ප්‍රරෝහ පද්ධතිය උසින් වර්ධනය වීමට අවස්ථාව සලසමින් ශාක පසට ස්ථිර කර තබන අවයවය"],
+["බීජාණු පත්‍ර","බීජාණු දැරීමට විකිරණය වූ පත්‍ර"],
+["සමබීජාණුකතාව","එක් වර්ගයක බීජාණු නිපදවන එක් වර්ගයක බීජාණුධානි වලින් සමන්විත වීම"],
+["විෂම බීජාණුකතාව","සමහර ශාක විශේෂ දෙවර්ගයක බීජාණුධානි, ක්ෂුද්‍ර බීජාණු හා මහා බීජාණු ලෙස දෙවර්ගයක බීජාණු නිපදවන තත්වය"],
+["ඩිම්බාවරණය","මහා බීජාණුධානිය ආරක්ෂා කරනු ලබන බීජාණු ශාක පටක ස්තරය"],
+["ඩිම්බය","මහා බීජාණුධානිය, මහා බීජාණුව හා ආවරණ පටල යන සියල්ල එක්ව සැලකූ විට එය ඩිම්බය ලෙස හැඳින්වේ"],
+["සංයෝගාණුව","වියළීම හා අධික සීතලට / මිදීමට ඔරොත්තු දෙන බහුන්‍යෂ්ටික ව්‍යුහයකි"],
+["ආමාශවාහිනී කුහරය","මල්ලක් වැනි මධ්‍ය ජීරණ කුටීරයක්"],
+["රේත්‍රිකාව","කුඩා දත් සහිත කයිටිනීමය රිබන් ආකාර ව්‍යුහයකි"],
+["ශ්වාසනාල පද්ධතිය","කයිටින් සහිත නාළ වේ"],
+["ජලවාහිනී පද්ධතිය","ජලය ගමන් කරන ශාඛනය වූ නාළ පද්ධතියක්"],
+["පෘෂ්ඨ රජ්ජුව","කෝඩේටාවන්ගේ අවම තරමින් කළල විකසනයේදී හෝ පමණක් දේහයේ පූර්ව සිට අපර දිශාවට දේහයට සන්ධාරණය සපයමින් ආහාර මාර්ගය සහ ස්නායු රජ්ජුව අතර පිහිටන අන්වායාම, ප්‍රත්‍යාස්ථ දණ්ඩාකාර ව්‍යුහය"],
+["ස්නායු රජ්ජුව","පෘෂ්ඨ රජ්ජුවට පෘෂ්ඨීයව කුහරමය, නාලාකාර ස්නායු රජ්ජුව ඇත"],
+["ජද්‍රපථය (ජම්පබාලිය)","ප්‍රජනක ප්‍රණාල, බහිස්ස්‍රාවී ප්‍රණාල හා ආහාර ජීරණ මාර්ගය ජද්‍රපථයට විවෘත වෙයි. එය තනි විවරයකින් බාහිර පරිසරයට විවෘත වන පොදු කුටීරයකි"],
+["පිධානය","ජලක්ලෝම වර්ගයේ ජීවීන්ගේ ආවරණය වී ඇති අස්ථිමය කවරයන්"],
+["චලතාපී","බාහිර පරිසරයේ උෂ්ණත්ව වෙනස්වීම් වලට අනුව ශරීර උෂ්ණත්වය වෙනස් කරගැනීම"]
+]},
+4:{title:"ශාක ආකාරය හා ක්‍රියාකාරීත්වය",acc:"#5a554e",cards:[
+["පටකය","විශේෂිත කාර්යයක් හෝ කාර්ය කිහිපයක් කිරීමට ඇති සෛල වර්ග එකක් හෝ වැඩි ගණනකින් යුතු සෛල සමූහයක් එක්ව ගත් විට එය පටකයක් ලෙස හඳුන්වනු ලබයි"],
+["විභාජක","ශාක දේහයේ ඇති විභේදනය නොවූ පටක වේ"],
+["ප්‍රාථමික වර්ධනය","අග්‍රස්ථ විභාජක මගින් නව සෛල එකතු වීම නිසා ශාක කොටස්වල දිග වැඩි වීමේ ක්‍රියාවලිය"],
+["අන්තරස්ථ විභාජක","තෘණ ශාක වැනි ඇතැම් ඒක බීජ පත්‍ර ශාක කඳන් පාදස්ථයේ දක්නට ඇති විභාජක පටක"],
+["මුලෙහි ප්‍රාථමික වර්ධනය","මුලෙහි අග්‍රස්ථයේ පිහිටි මූලාශ්‍ර විභාජකවල ක්‍රියාකාරීත්වයෙන් මුලෙහි දිග වැඩි වීම"],
+["ශාක කඳේ ප්‍රාථමික වර්ධනය","ප්‍රරෝහ අග්‍රස්ථයේ පවතින ප්‍රාථමික විභාජක පටකයේ ක්‍රියාකාරීත්වය හේතුවෙන් ශාක කඳ දිගින් වැඩි වීම"],
+["ප්‍රරෝහ අග්‍රස්ථ විභාජකය","ප්‍රරෝහ අග්‍රස්ථයේ පවතින විභාජනය වෙමින් පවතින බුබුළාකාර හැඩයෙන් යුත් සෛල සමූහයකි"],
+["පත්‍ර මූලාකෘති","අග්‍රස්ථ විභාජකය දෙපස ඇඟිලි වැනි නෙරුම්"],
+["ට්‍රිකෝම","අපිචර්මයෙන් හටගන්නා බාහිර නෙරුම් ලෙස ඇති රෝම හා ග්‍රන්ථි"],
+["පූරක පටක පද්ධතිය","චර්මීය පටකය හා සනාල පටකය අතර පිරවුමක් ලෙස ඇති පටකය"],
+["සපෙනේර තලය (පෙනේර තලය)","පෙනේර නළ ඒකක අතර ඇති හරස් බිත්ති මත සිදුරු සහිත තලයක් ඇති අතර එය පෙනේර තලය නම් වේ"],
+["අනිශ්චිත වර්ධනය","තම ජීවිත කාලය පුරා වර්ධනය සිදු කිරීම"],
+["මූල කේශ","ඇතැම් අපිචර්මීය සෛල වල පිටතට වැවෙන ඇඟිලි ආකාර ප්‍රවර්ධ"],
+["බාහිකය","අපිචර්මය සහ සනාල සිලින්ඩරය අතර දක්නට ලැබෙන පූරක පටකය"],
+["අන්තශ්චර්මය","බාහිකයේ ඇතුළතම පවතින තනි සෛල ස්තරය"],
+["කැස්පේරියන් පටිය","අන්තශ්චර්මයේ දරන සුබෙරිනීභවනය වූ පටිය"],
+["පරිචක්‍රය","අන්තශ්චර්මයට ඇතුළතින් මෘදුස්තර සෛල ස්තර දෙකකින් හෝ තුනකින් සෑදුණු පරිචක්‍රය පිහිටයි"],
+["ද්විතීයික වර්ධනය","පාර්ශ්වික විභාජක මගින් නිපදවනු ලබන නව සෛල හේතුවෙන් ශාක කඳන් හා මුල්වල විෂ්කම්භය වැඩි වීම"],
+["පරිචර්මය","එක් එක් වල්ක කැම්බියම හා එය මගින් නිපදවන සියලු පටක එක්ව සාදන ස්තරය. එය ජලයට හා වායු වලට අපාරගම්‍ය වේ"],
+["වා සිදුරු","පරිචර්මයේ තිරස් පැලුම් ලෙස කුඩා සිදුරු, ලිහිල්ව ඇසුරුණු වල්ක සෛල වලින් ඇති වේ. වායු හුවමාරුවට උදවු වේ"],
+["පොත්ත","සනාල කැම්බියමට පිටතින් ඇති සියලු පටක. ද්විතීයික ෆ්ලෝයම හා පරිචර්මය මීට අයත් වේ"],
+["අරටුව","කාෂ්ඨීය ශාක ක්‍රමයෙන් වයස්ගත වීමේ දී මුලින් ඇති වූ පැරණි ද්විතීයික ශෛලම පටක තවදුරටත් ජලය හා ඛනිජ පරිවහනය සිදු නොකරයි. මේ අක්‍රිය ස්තරය අරටුව ලෙස හඳුන්වයි"],
+["එලය (එදිරි දැව / එලය)","අරටුවට පිටතින් ඇති තවදුරටත් ශෛලම යුෂය පරිවහනය කරන නව ද්විතීයික ශෛලම පටක"],
+["දෘඪ දැව","ආවෘත බීජක ශාකවල ද්විතීයික ශෛලම"],
+["මෘදු දැව","විවෘත බීජක ශාකවල දැව. මෘදු දැවවල ශෛලම වාහිනී නොමැත"],
+["වර්ධක වළලු","වර්ෂයක් තුළදී සාමාන්‍ය වර්ධක කාල වලට වඩා ද්විතීයික ශෛලමයේ ඝනකම හා ශෛලම වාහිනීවල කුහරවල විශාලත්වය තෙත් උණුසුම් වර්ධක කාල තුළදී වැඩිය. ශාක කඳක හරස්කඩක ළා පාට හා තද පාට වළලු මගින් දැක ගත හැකි"],
+["වසන්ත කාෂ්ඨය","සෘතුමය දේශගුණික ප්‍රදේශ වල වසන්ත කාලය තුළදී ඇති වන කාෂ්ඨය (ද්විතීයික ශෛලම)"],
+["ගිම්හාන කාෂ්ඨය","වසන්ත ඍතුව හැර ඉතිරි වර්ධක සෘතුව පුරා හටගන්නා කාෂ්ඨය"],
+["වාර්ෂික වළය","වසන්ත කාෂ්ඨය හා ගිම්හාන කාෂ්ඨය යන කාෂ්ඨ දෙක එකට ගත් කල එය වාර්ෂික වළයක් ලෙස හැඳින්වේ"],
+["පත්‍ර වින්‍යාසය","කඳ මත පත්‍ර සැකසී ඇති ආකාරය"],
+["පත්‍ර මධ්‍යය","පත්‍රයේ උඩු හා යටි අපිචර්ම අතර පවතින පූරක පටකය"],
+["පූටිකාව","ශාක කඳන් හා පත්‍ර අපිචර්මයේ දක්නට ලැබෙන වැසීමට හා විවෘත වීමට ඇති සිදුරු විශේෂයකි"],
+["වායු හුවමාරුව","ජීවියෙකුගේ සෛල හා බාහිර පරිසරය අතර සිදුවන වායු හුවමාරුව"],
+["විසරණය","වෙනත් කිසිදු බාහිර බලයක් භාවිතා නොකරමින් ද්‍රව්‍ය අණුවල සිදුවන අහඹු චලනය හේතුවෙන් සාන්ද්‍රණය වැඩි ස්ථානයක සිට සාන්ද්‍රණය අඩු ස්ථානයක් කරා අණු චලනය වීම"],
+["ආස්‍රැතිය","වරණීය පාරගම්‍ය පටලයක් හරහා නිදහස් ජල අණු විසරණය වීම"],
+["නිදහස් ජල අණු","ද්‍රාව්‍ය අණු වලට හෝ පෘෂ්ඨ වලට බැඳී නැති ජල අණු"],
+["නිපානය","ජලකාමී ද්‍රව්‍ය මගින් ජල අණු භෞතිකව අධිශෝෂණය කර ගැනීම"],
+["පසසුකළ විසරණය (පහසුකළ විසරණය)","ජලය හා ජලකාමී ද්‍රව්‍ය, පටලයක් හරහා පිහිටා ඇති පරිවහක ප්‍රෝටීන අණුවල ආධාරයෙන් අක්‍රියව පටලය හරහා ගමන් කිරීම"],
+["තොග ප්‍රවාහය","පීඩන අනුක්‍රමණයක් ඔස්සේ ද්‍රව හා ද්‍රාව්‍ය අංශු ද්‍රවය සමග ගමන් කිරීම. පීඩනය වැඩි ස්ථානයක සිට අඩු පීඩනයක් ඇති ස්ථානයකට ද්‍රව්‍ය පරිවහනය වේ"],
+["ජල විභවය","ජලය ගමන් කරන දිශාව තීරණය කරනු ලබන, ද්‍රාව්‍ය සාන්ද්‍රණය සහ යොදනු ලබන පීඩනය මගින් පාලනය වන භෞතික ගුණාංගයකි"],
+["ද්‍රාව්‍ය විභවය","ද්‍රාවණයක මවුලිකතාවට අනුලෝමව සමානුපාතික වේ. ආස්‍රැතික විභවය ලෙස ද හඳුන්වයි"],
+["පීඩන විභවය","ද්‍රාවණයක් මත ඇති භෞතික පීඩනය. වායුගෝලීය පීඩනයට සාපේක්ෂව ධන (+) හෝ ඍණ (-) අගයන් ගනියි"],
+["ශූනතා පීඩනය","සෛලයක අන්තර්ගතය මගින් ප්ලාස්ම පටලය සෛල බිත්තිය මතට තෙරපීමක් ඇති කරයි. ප්‍රාක් ප්ලාස්මය ප්‍රතිවිරුද්ධ දෙසට තෙරපවයි. ඒ හේතුවෙන් ශූනතා පීඩනය ලෙස හැඳින්වෙන පීඩනයක් හටගනියි"],
+["අරීය ජල පරිවහනය","පසෙහි සිට මුලෙහි බාහිකය දක්වා ඇතුළු වූ ජලය හා ඛනිජ මුලෙහි ශෛලම දක්වා පරිවහනය වීම"],
+["ඇපොප්ලාස්ට මාර්ගය","ජලය හා එහි ද්‍රාව්‍ය සන්තතිකව සෛල බිත්ති අවකාශ හා බහිස්සෛලීය අවකාශ ඔස්සේ ගලා යන මාර්ගය"],
+["සිම්ප්ලාස්ට මාර්ගය","සියලු සජීවී සෛල වල සම්පූර්ණ සයිටොසෝලය හා ඒවා එකිනෙක බැඳී ඇති ප්ලාස්මබන්ධන සියල්ල අයත් වන මාර්ගය"],
+["පටල හරහා පරිවහන මාර්ගය","ජලය හා ඛනිජ අයන එක් සෛලයකින් ප්ලාස්ම පටලය ඔස්සේ පිටතට පැමිණ, ඊළඟ සෛලයේ ප්ලාස්ම පටලය හරහා නැවත ඇතුළට ගමන් කිරීම"],
+["රසෝද්ගමනය","සනාල සිලින්ඩරය තුළට ඇතුළු වූ ජලය හා ඛනිජ ශාකයේ ඉහළ කොටසට පරිවහනය වීම"],
+["ෆ්ලෝයම පරිසංක්‍රමණය","ප්‍රභාසංස්ලේෂණයේ දී නිපදවන ඵල පරිවහනය කිරීම ෆ්ලෝයම පටකය මඟින් සිදු වීම"],
+["සීනි ප්‍රභවය","ප්‍රභාසංස්ලේෂණය මගින් හෝ පිෂ්ඨය බිඳ හෙළීමෙන් ශුද්ධ සීනි නිෂ්පාදකයා ලෙස ක්‍රියාකරන අවයවය"],
+["අපායනය","වර්ධනය වන මුල්, කඳන්, අංකුර හා ඵල Sugar sink ලෙස ක්‍රියාකරයි"],
+["උත්ස්වේදනය","විසරණය මගින් ශාකයේ පත්‍ර හා වෙනත් වායව කොටස් තුළින් ජලය ජල වාෂ්ප ලෙස පිට වීම"],
+["බින්දුදය","මූල පීඩනය මගින් ශාක පත්‍ර වෙතට ජල ප්‍රමාණයක් ඇතුළු කරයි. ඇතැම් අකාෂ්ඨීය ශාකවල පත්‍ර දාරවලින් හෝ පත්‍ර තුඩුවලින් ජලය බින්දු ලෙස බැහැර කරවයි. මෙම සංසිද්ධිය බින්දුදය ලෙස හැඳින්වෙයි"],
+["ජල සිදුරු","බින්දුදය සිදුවන ශාකවල කුඩා ශාඛා නාරටි අසල දක්නට ලැබෙන විශේෂිත සෛල කාණ්ඩ වලින් සෑදුණු විශේෂ සිදුරු"],
+["පෝෂණය","ජීවියෙකුගේ පරිවෘත්තීය ක්‍රියා සඳහා අවශ්‍ය අමුද්‍රව්‍ය හා ශක්තිය පරිසරයෙන් ලබා ගන්නා ක්‍රියාවලිය"],
+["ස්වයංපෝෂීන්","ස්වයංපෝෂකතාව දක්වන ජීවීන්. ස්වයංපෝෂීන් කාබන්ඩයොක්සයිඩ් හා අකාබනික ද්‍රව්‍ය මගින් කාබනික ආහාර සංස්ලේෂණය කරයි"],
+["සහජීවනය","විශේෂ දෙකකට අයත් ජීවීන් දෙදෙනෙකු, සමීපව ජීවත් වෙමින් පවත්වා ගන්නා පාරිසරික සම්බන්ධතාව"],
+["සහභෝජිතාවය","එක් ජීවි විශේෂයකට පමණක් වාසි සැලසෙන ලෙසත්, අනෙක් විශේෂයට බලපෑමක් ඇති නොවන ලෙසත් ජීවී විශේෂ දෙකක් අතර පවතින අන්තර් ක්‍රියාව (උදා: අපිශාකීය ඕකිඩ්)"],
+["පරපෝෂිතාවය","එක් ජීවී විශේෂයකට (පරපෝෂිතයා) පමණක් වාසි සැලසෙන ලෙසත් අනෙක් විශේෂයට (ධාරකයා) හානි සිදුවන ලෙසත් ජීවී විශේෂ දෙකක් අතර පවතින සමීප සබඳතාව (අර්ධ පරපෝෂී - Loranthus, පූර්ණ පරපෝෂී - Cuscuta)"],
+["මාංශ භක්ෂක ශාක","නයිට්‍රජන් හා ඛනිජ වර්ග ඌන පස්වල වර්ධනය වන, කෘමීන් හා කුඩා සතුන් මරණයට පත් කර ජීරණය කර ඒ ද්‍රව්‍ය ලබාගන්නා ශාක"],
+["අත්‍යවශ්‍ය මූලද්‍රව්‍ය","ශාක වල ජීවන චක්‍ර සම්පූර්ණ කරගැනීමටත් තවත් පරම්පරාවක් නිපදවීමටත් අවශ්‍ය මූලද්‍රව්‍ය"],
+["අධිමාත්‍ර මූලද්‍රව්‍ය","ශාක වලට විශාල ප්‍රමාණවලින් අවශ්‍ය වන මූලද්‍රව්‍ය"],
+["අංශුමාත්‍ර මූලද්‍රව්‍ය","ශාක වලට සුළු ප්‍රමාණවලින් අවශ්‍ය වන මූලද්‍රව්‍ය"],
+["පරම්පරා ප්‍රත්‍යාවර්තනය","ජීවන චක්‍රයක් තුළදී ඒකගුණ පරම්පරාවත් ද්විගුණ පරම්පරාවත් මාරුවෙන් මාරුවට හට ගැනීම"],
+["විෂමරූපී පරම්පරා ප්‍රත්‍යාවර්තනය","රූපාකාරයෙන් වෙනස් බහු සෛලික දේහ ස්වරූපයන් දෙකක් වන ඒකගුණ ජන්මාණු ශාකය හා ද්විගුණ බීජාණු ශාකය මාරුවෙන් මාරුවට හට ගැනීම"],
+["සමබීජාණුකතාව (unit 4)","රූපාකාරයෙන් සමාන බීජාණු නිපදවීම"],
+["ප්‍රාක්තන්තුව","කොළ පැහැති ශාඛනය වූ සූත්‍රිකාවකි"],
+["සෝරස් (සෝරයි)","(Nephrolepis ශාකයේ) පරිණත පත්‍රිකාවල යටි පැත්තේ ඇති වන බීජාණුධානි සමූහ"],
+["ජායා බීජාණු ශාකය","මහා බීජාණු නිපදවන බීජාණු ශාකය"],
+["පුං බීජාණු ශාකය","ක්ෂුද්‍ර බීජාණු නිපදවන බීජාණු ශාකය"],
+["අනුද්වාරය","ඩිම්බයේ විදූර අන්තයේ ඩිම්බාවරණයේ කුඩා සිදුරක් ඇත. එය අනුද්වාරයයි"],
+["පරාගණය","පරාග කණිකා පරිණත ඩිම්බයක අනුද්වාරයේ තැන්පත් වීම"],
+["පුෂ්පය","විකිරණය වූ පත්‍ර වළලු 4 කින් සමන්විත විශේෂිත ප්‍රරෝහයකි. එම පත්‍ර මනිපත්‍ර, දළ පත්‍ර, රේණු හා අණ්ඩප ලෙස නම් කරයි"],
+["රේණු","ක්ෂුද්‍ර බීජාණු පත්‍ර"],
+["අණ්ඩපය","සපුෂ්ප ශාකවල මහා බීජාණු පත්‍ර"],
+["ඩිම්බකෝෂය","අණ්ඩපයේ පාදස්ථව ඇති ප්‍රසාරිත ප්‍රදේශය"],
+["කීලය","කලංකය හා ඩිම්බකෝෂය සම්බන්ධ කරන සිහින් දිගටි බෙල්ලක් වැනි ව්‍යුහය"],
+["පරාගණය (කලංකගත වීම)","පරාග කණිකා එකම විශේෂයේ පරිණත කලංකය මත පතිත වීම"],
+["ස්වයං පරාගණය","ශාක විශේෂවල පරාගධානි වල කණිකා එකම පුෂ්පයේම කලංකය මත හෝ එම ශාකයේම වෙනත් පුෂ්පයක කලංකය මත පතිත වීම"],
+["පර පරාගණය","පරාග කණිකා එම විශේෂයේම වෙනත් ශාකයක පුෂ්පයක කලංකය මත පතිත වීම"],
+["ද්විත්ව සංසේචනය","එක් ශුක්‍රාණුවක් අණ්ඩය සමග එක් වී ද්විගුණ යුක්තාණුව සාදයි. අනෙක් ශුක්‍රාණුව කළල කෝෂයේ ධ්‍රැවීය න්‍යෂ්ටි දෙක සමග එක් වේ. මෙය ද්විත්ව සංසේචනයයි"],
+["ඵලය","සංසේචනය වීමෙන් පසු ඩිම්බකෝෂය උත්තේජනයට ලක් වීමෙන් විශාල වී හා විකසනය වී සෑදෙන ව්‍යුහය"],
+["පාර්තෙනොකාපිය (පාතනෝඵලනය)","සමහර ශාකවල සංසේචනය නොවී ඩිම්බකෝෂය ඵලයක් බවට විකසනය වීම"],
+["පාර්තෙනොජෙනිසිස් (පාතනෝද්භවය)","සමහර ශාක වල සංසේචනයක් සිදු නොවීමෙන් බීජ විකසනය වීම"],
+["බීජ සුප්තතාව","පරිණතියේ එක් අවධියකදී බීජය තුළ ඇති කළලය නිෂේධනය වීම නිසා ස්වභාවිකවම ඵලය තුළ බීජය ප්‍රරෝහණය වැළැක්වීම"],
+["බීජ ප්‍රරෝහණය","ජලය අවශෝෂණය, එන්සයිම සක්‍රිය වීම, ආහාර සංචිත සංචලනය වීම හා කළලයේ ශීඝ්‍ර වර්ධනයක් සිදු වීම"],
+["ප්‍රභාරූපජනනය","ශාකයක වර්ධනය හා විකසනයේ දී ආලෝකය මගින් ක්‍රියාත්මක වන ප්‍රධාන සිදුවීම් සියල්ල"],
+["ක්‍රිප්ටොක්‍රෝම්","නිල් ආලෝක ප්‍රභා ප්‍රතිග්‍රාහක"],
+["ෆයිටොක්‍රෝම්","රතු ආලෝක ප්‍රභා ප්‍රතිග්‍රාහක"],
+["ප්‍රකාශ අවධිය","පැය 24 ක කාලය තුළ ශාකය ආලෝකයට නිරාවරණය වන කාලය"],
+["ප්‍රභාවර්තනය","ශාක ප්‍රරෝහය ආලෝකය දෙසට (ධන) හෝ ආලෝකයෙන් ඉවතට (ඍණ) හෝ වර්ධනය වීම"],
+["ගුරුත්වාවර්තනය","ගුරුත්වයට ප්‍රතිචාරයක් ලෙස ශාකයක කඳ ඉහළට වර්ධනය වන විට මුල පහළට වර්ධනය වීම"],
+["ස්ටැටොලිත් (තුලාෂ්ම)","සනාල ශාකවල හමුවන විශේෂණය වූ ලවක වර්ගයක් වන අතර පිෂ්ඨ කණිකා ඒවායේ ගැබ් වී ඇත"],
+["ස්පර්ශාවර්තනය","ආධාරකයක් දෙසට පහුරක් දක්වන දිශානත වර්ධනය"],
+["ස්පර්ශ රූපජනනය","යාන්ත්‍රික බාධා නිසා ශාක ආකාරවල ඇතිවන වෙනස් වීම්"],
+["ස්පර්ශ සන්නමනය","ස්පර්ශය හේතුවෙන් උපධානය (Pulvinus) නම් විශේෂණය වූ චාලක අවයවයේ ශූනතාවය ක්ෂණිකව නැති වීමෙන් පත්‍රිකා හැකිළීම"],
+["හෝමෝන","ඉතා සුළු ප්‍රමාණ වලින් නිපදවෙන, නිපදවූ ස්ථානයේ සිට වෙනත් කොටසකට පරිවහනය වන, ඉලක්ක සෛල වල ප්‍රතිචාරයක් ප්‍රේරණය කරන සංඥා අණු"],
+["බීජ පැළවල ත්‍රිත්ව ප්‍රතිචාරය","කඳ දික් වීම නිෂේධනය, පාර්ශ්වික වර්ධනය දිරිගැන්වීම, තිරස් වර්ධනය දිරි ගැන්වීම"],
+["ශාක ආතති","ශාකවල පැවැත්ම, වර්ධනය හා ප්‍රජනනය කෙරෙහි පරිසරය තුළ ඇති සාධක මගින් ඇති කරන හානිකර බලපෑම්"],
+["ලවණශාක","ලවණ දරාගන්නා ශාක"]
+]}};
+
+// ── STATE ──────────────────────────────────────────
+let S={u:1,set:0,idx:0,fl:false,shuf:true,cards:[],ord:[]};
+
+function shf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function loadU(u,s){
+  S.u=u;S.set=s;S.idx=0;S.fl=false;
+  const d=D[u];
+  document.getElementById('fc-ey').textContent='UNIT 0'+u;
+  document.getElementById('fc-tt').textContent=d.title;
+  document.getElementById('fc-tot').textContent=d.cards.length;
+  document.getElementById('fc-sets').textContent=Math.ceil(d.cards.length/10);
+  let cards;
+  if(s===0){cards=d.cards.slice();document.getElementById('fc-sn').textContent='සියල්ල';}
+  else{const st=(s-1)*10,en=Math.min(st+10,d.cards.length);cards=d.cards.slice(st,en);document.getElementById('fc-sn').textContent='Set '+(s<10?'0'+s:s);}
+  S.cards=cards;S.ord=shf([...Array(cards.length).keys()]);
+  buildSetBar(u,s);renderC();
+}
+
+function buildSetBar(u,s){
+  const d=D[u],sc=Math.ceil(d.cards.length/10);
+  let h='<span class="set-lbl">Set</span><button class="set-b'+(s===0?' act':'')+'" onclick="loadU('+u+',0)">සියල්ල</button>';
+  for(let i=1;i<=sc;i++){const st=(i-1)*10+1,en=Math.min(i*10,d.cards.length);h+='<button class="set-b'+(s===i?' act':'')+'" onclick="loadU('+u+','+i+')">'+(i<10?'0'+i:i)+'</button>';}
+  document.getElementById('set-bar').innerHTML=h;
+}
+
+function renderC(){
+  const cards=S.cards;if(!cards.length)return;
+  const idx=S.shuf?S.ord[S.idx]:S.idx;
+  const [t,def]=cards[idx];
+  const n=String(idx+1).padStart(2,'0');
+  document.getElementById('fnum').textContent='#'+n;
+  document.getElementById('bnum').textContent='#'+n;
+  document.getElementById('ftag').textContent='Unit 0'+S.u;
+  document.getElementById('cterm').textContent=t;
+  document.getElementById('cdef').textContent=def;
+  S.fl=false;
+  const c=document.getElementById('thecard');
+  c.style.transition='none';c.classList.remove('fl');
+  c.offsetHeight;c.style.transition='';
+  updP();
+}
+
+function updP(){
+  const tot=S.cards.length,cur=S.idx+1;
+  document.getElementById('plbl').textContent=cur+' / '+tot;
+  document.getElementById('pfill').style.width=((cur/tot)*100)+'%';
+}
+
+function flipC(){S.fl=!S.fl;document.getElementById('thecard').classList.toggle('fl',S.fl);}
+function nextC(){
+  if(S.idx<S.cards.length-1){S.idx++;renderC();}
+  else{toast('Set '+S.set+' සම්පූර්ණයි! '+S.cards.length+' cards done.');S.idx=0;S.ord=shf([...Array(S.cards.length).keys()]);renderC();}
+}
+function prevC(){if(S.idx>0){S.idx--;renderC();}}
+function tshuf(){
+  S.shuf=!S.shuf;
+  const p=document.getElementById('shpill');
+  p.textContent='⟳ Shuffle: '+(S.shuf?'ON':'OFF');
+  p.className='shp'+(S.shuf?' on':'');
+  if(S.shuf)S.ord=shf([...Array(S.cards.length).keys()]);
+  S.idx=0;renderC();
+}
+function rstC(){S.idx=0;S.ord=shf([...Array(S.cards.length).keys()]);renderC();}
+
+// ── TOAST ──────────────────────────────────────────
+function toast(m){
+  const t=document.getElementById('tst');
+  document.getElementById('tmsg').textContent=m;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── KEYBOARD ──────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('fc-view').classList.contains('active'))return;
+  if(e.key==='ArrowRight')nextC();
+  else if(e.key==='ArrowLeft')prevC();
+  else if(e.key===' '){e.preventDefault();flipC();}
+});
+
+// ── NAV ────────────────────────────────────────────
+function nvc(el){
+  const v=el.dataset.v,u=el.dataset.u?parseInt(el.dataset.u):null;
+  document.querySelectorAll('.sb-i').forEach(x=>x.classList.remove('act'));
+  el.classList.add('act');
+  ['1','2','3','4'].forEach(x=>{const s=document.getElementById('sub'+x);if(s)s.style.display='none';});
+  document.getElementById('subinfo').style.display='none';
+  document.getElementById('subrep').style.display='none';
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById(v+'-view').classList.add('active');
+  if(u){document.getElementById('sub'+u).style.display='block';loadU(u,0);}
+  if(v==='info'){document.getElementById('subinfo').style.display='block';buildInfo();}
+  if(v==='rep'){document.getElementById('subrep').style.display='block';buildRep();}
+}
+function ssc(u,s,el){
+  document.querySelectorAll('#sub'+u+' .sb-si').forEach(x=>x.classList.remove('act'));
+  el.classList.add('act');loadU(u,s);
+}
+function sc2(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+function tsb(){const sb=document.getElementById('sb');const c=sb.classList.toggle('col');document.getElementById('sbt').textContent=c?'›':'‹';}
+function tmob(){const sb=document.getElementById('sb');const ov=document.getElementById('ov');sb.classList.toggle('mob');ov.classList.toggle('active');}
+
+// ── INFOGRAPHIC ────────────────────────────────────
+let infoBuilt=false;
+function buildInfo(){
+  if(infoBuilt)return;infoBuilt=true;
+  const totals=Object.entries(D).map(([k,v])=>({u:k,t:v.title,n:v.cards.length,acc:v.acc}));
+  const total=totals.reduce((a,b)=>a+b.n,0);
+  // Overview strip
+  let ov='';
+  totals.forEach(x=>{
+    ov+=`<div class="ovc" onclick="sc2('ch-b')"><div class="ovn" style="color:${x.acc}">${x.n}</div><div class="ovl">UNIT 0${x.u}</div><div class="ovt">${x.t}</div></div>`;
+  });
+  document.getElementById('ov-s').innerHTML=ov;
+  // Bar chart
+  const max=Math.max(...totals.map(x=>x.n));
+  let bc='';
+  totals.forEach(x=>{
+    const pct=Math.round((x.n/max)*100);
+    bc+=`<div class="br"><div class="bul">Unit 0${x.u}</div><div class="bw"><div class="bf" style="width:${pct}%;background:${x.acc}"><span class="bfl">${x.t}</span></div></div><div class="bct">${x.n}</div></div>`;
+  });
+  document.getElementById('barchart').innerHTML=bc;
+  // Donut
+  const circ=471,r=75;
+  let offset=0;
+  const colours=['#c96442','#c98a42','#6b7a3d','#8a847a'];
+  totals.forEach((x,i)=>{
+    const len=(x.n/total)*circ;
+    document.getElementById('d'+(i+1)).setAttribute('stroke-dashoffset',circ-offset);
+    document.getElementById('d'+(i+1)).setAttribute('stroke-dasharray',len+' '+(circ-len));
+    offset+=len;
+  });
+  let lg='';
+  totals.forEach((x,i)=>{
+    const pct=Math.round((x.n/total)*100);
+    lg+=`<div class="li"><div class="ld" style="background:${colours[i]}"></div><div><div class="lu">Unit 0${x.u} · ${x.n} terms</div><div class="ldt">${x.t} · ${pct}%</div></div></div>`;
+  });
+  document.getElementById('dlegend').innerHTML=lg;
+  // Heatmap
+  let hm='';
+  totals.forEach(x=>{
+    const sets=Math.ceil(x.n/10);
+    for(let s=1;s<=sets;s++){
+      const cnt=Math.min(10,x.n-(s-1)*10);
+      const alpha=0.15+(cnt/10)*0.65;
+      hm+=`<div class="hc" style="background:rgba(${hexToRgb(x.acc)},${alpha.toFixed(2)})"><span class="hl">U${x.u}·S${s<10?'0'+s:s}</span>${cnt} terms</div>`;
+    }
+  });
+  document.getElementById('hmgrid').innerHTML=hm;
+  // Topic clusters
+  const topics={
+    1:["ජීවයේ ලක්ෂණ","සෛල ව්‍යූහ","ජෛව අණු","ATP හා ශක්තිය"],
+    2:["ප්‍රෝටීන ව්‍යූහ","DNA/RNA","ඉන්ද්‍රයිකා","සෛල චක්‍රය","එන්සයිම","ශ්වසනය","ප්‍රභාසංස්ලේෂණය"],
+    3:["පරිණාම න්‍යාය","වර්ගීකරණය","ශාක ශ්‍රේෂ්ඨ-phyla","සතා-phyla"],
+    4:["ශාක පටක","ජල ප්‍රවාහ","ෆ්ලෝයම","හෝමෝන","ප්‍රභාසංස්ලේෂණ","ශාක ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ reproduction","ආරක්ෂාව"]
+  };
+  let tc='';
+  totals.forEach(x=>{
+    const tags=(topics[x.u]||[]).map(t=>`<span class="tg">${t}</span>`).join('');
+    tc+=`<div><div class="tch"><div class="tcd" style="background:${x.acc}"></div><div class="tcn">Unit 0${x.u} · ${x.t}</div><div class="tcc">${x.n} terms · ${Math.ceil(x.n/10)} sets</div></div><div class="tt">${tags}</div></div>`;
+  });
+  document.getElementById('tclusters').innerHTML=tc;
+}
+
+function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return r+','+g+','+b;}
+
+// ── REPORT ─────────────────────────────────────────
+let repBuilt=false;
+function buildRep(){
+  if(repBuilt)return;repBuilt=true;
+  const tips={
+    1:"ජීවයේ ලක්ෂණ 9 ම ලිවිය යුතු. Mitosis vs Meiosis comparison table ලෙස practice. Enzyme graphs (V vs [S]) interpret කිරීමට හුරු වන්න.",
+    2:"ATP yield: Glycolysis 2, Krebs 2, ETC ~34. Km = substrate at Vmax/2. ETC → chemiosmosis → ATP synthase පිළිවෙල accurate ලෙස.",
+    3:"Chordate 4 features: notochord, dorsal hollow nerve cord, pharyngeal slits, post-anal tail. Phyla පිළිවෙල: Platyhelminthes → Nematoda → Annelida → Arthropoda → Echinodermata → Chordata.",
+    4:"Transpiration pull = cohesion-tension. Pressure flow source → sink. Auxin shoots promote, roots inhibit. Flowering = critical NIGHT length, not day. C4 bundle sheath concentrates CO2."
+  };
+  const summaries={
+    1:"Unit 01 — ජීවයේ ලක්ෂණ, ජීවදේහ රසායනය, සෛල ව්‍යූහ. 11 නිර්වචන. Unit 02 — සෛලීය රසායනය ගැඹුරු; ප්‍රෝටීන ව්‍යූහ, DNA, ඉන්ද්‍රයිකා, ශ්වසනය, ප්‍රභාසංස්ලේෂණය. 79 නිර්වචන.",
+    2:"Unit 02 ගැඹුරු ජෛව රසායනය — Michaelis-Menten kinetics, ETC, Calvin cycle, fermentation. 79 නිර්වචන. Exam high weight.",
+    3:"Lamarck → Darwin, classification, species concepts, plant + animal phyla. 31 නිර්වචන. Identification Q ශ්‍රේෂ්ඨ-heavy.",
+    4:"ශාක ශ්‍රේෂ්ඨ anatomy, water transport, phloem, hormones, tropisms, C3/C4/CAM, reproduction, stress. 100 නිර්වචන. Most marks."
+  };
+  let html=`<div id="r-sum" style="margin-bottom:56px">
+  <div class="rs"><div class="rst">A/L ජීව විද්‍යාව — සමස්ත දර්ශනය</div>
+  <div class="rss">Units 4 · K3nfold✨</div>
+  <table class="rtbl"><thead><tr><th>Unit</th><th>ශීර්ෂය</th><th>Terms</th><th>Sets</th></tr></thead><tbody>`;
+  Object.entries(D).forEach(([u,d])=>{html+=`<tr><td>Unit 0${u}</td><td>${d.title}</td><td>${d.cards.length}</td><td>${Math.ceil(d.cards.length/10)}</td></tr>`;});
+  html+=`</tbody></table></div></div>`;
+  Object.entries(D).forEach(([u,d])=>{
+    html+=`<div id="r-u${u}" class="rs">
+    <div class="rst" style="color:${d.acc}">Unit 0${u} · ${d.title}</div>
+    <div class="rss">${d.cards.length} නිර්වචන · ${Math.ceil(d.cards.length/10)} Sets</div>
+    <div class="rq"><p>${summaries[u]}</p></div>
+    <div class="rg">
+      <div class="rc"><div class="rct"><div class="rcd" style="background:${d.acc}"></div>සියලු නිර්වචන</div>
+      <div style="max-height:200px;overflow-y:auto"><ul class="rl">${d.cards.map((c,i)=>`<li><strong>${String(i+1).padStart(2,'0')}.</strong> ${c[0]}</li>`).join('')}</ul></div></div>
+      <div class="rc"><div class="rct"><div class="rcd" style="background:${d.acc}"></div>Exam Tips</div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.7">${tips[u]}</div></div>
+    </div></div>`;
+  });
+  html+=`<div id="r-str" class="rs"><div class="rst">ඉගෙනීමේ ක්‍රමය</div>
+  <div class="sg">
+    <div class="sk"><div class="slv">Beginner</div><div class="sdc">Set 01 කාඩ් 10කින් ආරම්භ. නිර්වචනය කටපාඩම් කරන්නට ප්‍රථමයෙන් term හඳුනන්න.</div></div>
+    <div class="sk"><div class="slv">Intermediate</div><div class="sdc">Shuffle enable. Full units. Definition කියවා term recall ලිවිය. ආයෙ flip.</div></div>
+    <div class="sk"><div class="slv">Advanced</div><div class="sdc">Random unit + set. Full definition ලියා flip. 100% accuracy target.</div></div>
+    <div class="sk"><div class="slv">Exam Ready</div><div class="sdc">Exam tips per unit. Infographic comparison. Daily 20-min review sessions.</div></div>
+  </div></div>
+  <div style="text-align:center;padding:32px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--tm)">
+  <a href="https://t.me/k3N_edu" target="_blank" style="color:var(--acc)">K3nfold✨</a> · කේතය · Claude AI</div>`;
+  document.getElementById('repbody').innerHTML=html;
+}
+
+// ── INIT ───────────────────────────────────────────
+loadU(1,0);
+</script>
+</body></html>

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>K3nfold Learning Hub</title>
+<meta name="description" content="K3nfold Learning Hub — a premium educational dashboard. Choose your learning category." />
+
+<!-- ============================================================
+     GOOGLE FONTS
+     ============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ================================================================
+   1. DESIGN TOKENS
+   ================================================================ */
+:root{
+  --void:        #06070b;
+  --deep:        #0c0f17;
+  --surface:     rgba(255,255,255,0.045);
+  --surface-2:   rgba(255,255,255,0.08);
+  --border:      rgba(255,255,255,0.10);
+  --border-soft: rgba(255,255,255,0.06);
+
+  --gold:        #d6af49;
+  --gold-light:  #f3da92;
+  --gold-dim:    rgba(214,175,73,0.35);
+
+  --ink:         #f4f0e6;
+  --muted:       #9aa1b4;
+  --muted-2:     #6b7184;
+
+  --c-maths:     #4d79ff;
+  --c-bio:       #34b56f;
+  --c-physics:   #9163f5;
+  --c-chem:      #ff8a4c;
+  --c-memory:    #2bc8c2;
+  --c-afteral:   #e6516f;
+
+  --s-1: 8px;  --s-2: 16px; --s-3: 24px; --s-4: 32px;
+  --s-5: 48px; --s-6: 64px; --s-7: 96px;
+
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+
+/* ================================================================
+   2. RESET & BASE
+   ================================================================ */
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  background:var(--void);
+  color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; text-decoration:none; }
+button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+h1,h2,h3,p{ margin:0; }
+::selection{ background:var(--gold-dim); color:var(--ink); }
+
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:3px;
+  border-radius:8px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
+
+::-webkit-scrollbar{ width:10px; }
+::-webkit-scrollbar-track{ background:var(--void); }
+::-webkit-scrollbar-thumb{ background:var(--surface-2); border-radius:10px; }
+
+/* ================================================================
+   3. STICKY TOP BAR
+   ================================================================ */
+.topbar{
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px clamp(20px,5vw,56px);
+  background:rgba(6,7,11,0.35);
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border-bottom:1px solid var(--border-soft);
+  transition:background .3s var(--ease);
+}
+.brand{ display:flex; align-items:center; gap:14px; }
+
+.brand-name {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+.brand-name small {
+  display: block;
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.brand-seal{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: var(--deep);
+  border:1px solid var(--gold-dim);
+  box-shadow:0 0 22px rgba(214,175,73,0.25);
+  flex-shrink: 0;
+}
+
+.brand-seal img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.tg-link{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 16px;
+  border-radius:999px;
+  background:rgba(42,174,176,0.12);
+  border:1px solid rgba(42,174,176,0.28);
+  color:rgba(43,200,194,0.9);
+  font-size:13px; font-weight:600;
+  transition:background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
+  white-space:nowrap;
+}
+.tg-link:hover{
+  background:rgba(42,174,176,0.22);
+  border-color:rgba(42,174,176,0.55);
+  color:#2bc8c2;
+}
+@media (max-width:480px){ .tg-link span{ display:none; } .tg-link{ padding:8px 11px; } }
+
+/* ================================================================
+   4. HERO SECTION
+   ================================================================ */
+.hero{
+  position:relative;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:140px 20px 90px;
+  overflow:hidden;
+}
+
+.hero-bg{
+  position:absolute; inset:0;
+  background-size:cover;
+  background-position:center;
+  background-color:var(--void);
+  transform:scale(1.04);
+  filter:saturate(1.05);
+}
+.hero-overlay{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(6,7,11,0.35) 0%, rgba(6,7,11,0.55) 45%, var(--void) 92%),
+    radial-gradient(ellipse at 50% 20%, rgba(214,175,73,0.10), transparent 60%);
+}
+.hero-glow{
+  position:absolute; inset:-20%;
+  background:radial-gradient(circle at 30% 30%, rgba(214,175,73,0.10), transparent 55%),
+             radial-gradient(circle at 75% 65%, rgba(77,121,255,0.08), transparent 55%);
+  animation:driftGlow 22s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes driftGlow{
+  from{ transform:translate(0,0) rotate(0deg); }
+  to{ transform:translate(2%,-3%) rotate(6deg); }
+}
+
+.hero-content{
+  position:relative; z-index:2;
+  max-width:780px;
+  text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:var(--s-3);
+}
+
+.hero-eyebrow{
+  font-size:12px; letter-spacing:0.22em; text-transform:uppercase;
+  color:var(--gold-light); font-weight:600;
+  display:flex; align-items:center; gap:10px;
+  opacity:0.9;
+}
+.hero-eyebrow::before, .hero-eyebrow::after{
+  content:""; width:26px; height:1px; background:var(--gold-dim);
+}
+
+.hero-title{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:clamp(2.6rem, 6.4vw, 4.6rem);
+  line-height:1.05;
+  letter-spacing:-0.01em;
+  background:linear-gradient(100deg, #fff6df 0%, var(--gold) 28%, var(--gold-light) 45%, #fff6df 60%, var(--gold) 80%);
+  background-size:220% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:shimmer 7s linear infinite;
+}
+@keyframes shimmer{
+  0%{ background-position:0% 50%; }
+  100%{ background-position:200% 50%; }
+}
+
+.hero-subtitle{
+  font-size:clamp(1rem,1.6vw,1.2rem);
+  color:var(--muted);
+  font-weight:400;
+  max-width:520px;
+}
+
+.search-wrap{
+  margin-top:var(--s-2);
+  width:100%;
+  max-width:480px;
+  position:relative;
+}
+.search-wrap svg{
+  position:absolute; left:18px; top:50%; transform:translateY(-50%);
+  width:18px; height:18px; stroke:var(--muted); pointer-events:none;
+}
+#searchInput{
+  width:100%;
+  padding:15px 20px 15px 48px;
+  border-radius:999px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  color:var(--ink);
+  font-size:15px;
+  transition:border-color .25s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease);
+}
+#searchInput::placeholder{ color:var(--muted-2); }
+#searchInput:focus{
+  border-color:var(--gold-dim);
+  background:rgba(255,255,255,0.07);
+  box-shadow:0 0 0 4px rgba(214,175,73,0.12);
+  outline:none;
+}
+
+/* ================================================================
+   5. MAIN CONTENT AREA
+   ================================================================ */
+main{
+  position:relative;
+  max-width:1320px;
+  margin:0 auto;
+  padding:0 clamp(20px,5vw,56px) var(--s-7);
+}
+
+.section-head{
+  display:flex; flex-direction:column; gap:6px;
+  margin-bottom:var(--s-4);
+}
+.section-eyebrow{
+  font-size:11.5px; letter-spacing:0.2em; text-transform:uppercase;
+  color:var(--gold); font-weight:700;
+}
+.section-title{
+  font-family:'Fraunces',serif; font-weight:600;
+  font-size:clamp(1.5rem,2.4vw,2rem);
+}
+.section-sub{ color:var(--muted); font-size:14.5px; }
+
+.view{ transition:opacity .45s var(--ease), transform .45s var(--ease); }
+.view.is-out{ opacity:0; transform:translateY(14px); }
+.view[hidden]{ display:none; }
+
+/* ================================================================
+   6. LEVEL 01 — CATEGORY GRID
+   ================================================================ */
+.category-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(270px, 1fr));
+  gap:var(--s-3);
+}
+
+.cat-card{
+  position:relative;
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  background:var(--deep);
+  border:1px solid var(--border-soft);
+  cursor:pointer;
+  min-height:300px;
+  display:flex; align-items:flex-end;
+  isolation:isolate;
+  opacity:0; transform:translateY(22px);
+  animation:cardIn .6s var(--ease) forwards;
+  transition:transform .45s var(--ease), border-color .35s var(--ease), box-shadow .45s var(--ease);
+}
+@keyframes cardIn{ to{ opacity:1; transform:translateY(0); } }
+
+.cat-card-media{
+  position:absolute; inset:0;
+  background-size:cover; background-position:center;
+  transition:transform .7s var(--ease), filter .5s var(--ease);
+}
+.cat-card-shade{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, transparent 25%, rgba(6,7,11,0.55) 60%, rgba(6,7,11,0.92) 100%),
+    linear-gradient(0deg, color-mix(in srgb, var(--accent) 28%, transparent), transparent 70%);
+}
+.cat-card-number{
+  position:absolute; top:18px; right:20px;
+  font-family:'Fraunces',serif; font-weight:600; font-size:13px;
+  color:rgba(244,240,230,0.55);
+  letter-spacing:0.05em;
+}
+.cat-card-count{
+  position:absolute; top:18px; left:18px;
+  font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--ink);
+  background:color-mix(in srgb, var(--accent) 30%, rgba(6,7,11,0.55));
+  border:1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  backdrop-filter:blur(8px);
+  padding:4px 10px;
+  border-radius:999px;
+  opacity:0.88;
+}
+.cat-card-body{
+  position:relative; z-index:2;
+  padding:var(--s-3) var(--s-3) var(--s-3);
+  width:100%;
+}
+.cat-card-title{
+  font-family:'Fraunces',serif; font-weight:600;
+  font-size:1.5rem; margin-bottom:6px;
+}
+.cat-card-desc{
+  font-size:13.5px; color:var(--muted); line-height:1.5;
+  max-width:90%;
+}
+.cat-card-cta{
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:14px;
+  font-size:12.5px; font-weight:600; letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--gold-light);
+  opacity:0; transform:translateY(6px);
+  transition:opacity .35s var(--ease), transform .35s var(--ease);
+}
+
+.cat-card:hover, .cat-card:focus-visible{
+  transform:translateY(-8px) scale(1.015);
+  border-color:color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow:0 24px 50px -20px rgba(0,0,0,0.65), 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 40px -8px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.cat-card:hover .cat-card-media{ transform:scale(1.09); }
+.cat-card:hover .cat-card-cta{ opacity:1; transform:translateY(0); }
+.cat-card.is-pressed{ transform:scale(0.965); transition:transform .15s ease; }
+
+/* ================================================================
+   7. LEVEL 02 — SUBJECT VIEW
+   ================================================================ */
+.back-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 18px 10px 14px;
+  border-radius:999px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  font-size:13.5px; font-weight:600;
+  color:var(--ink);
+  margin-bottom:var(--s-4);
+  transition:background .25s var(--ease), border-color .25s var(--ease), transform .25s var(--ease);
+}
+.back-btn:hover{ background:var(--surface-2); border-color:var(--gold-dim); transform:translateX(-2px); }
+.back-btn svg{ width:16px; height:16px; stroke:var(--gold-light); }
+
+.level2-header{
+  display:flex; align-items:center; gap:16px;
+  margin-bottom:var(--s-4);
+}
+.level2-icon{
+  width:54px; height:54px; border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Fraunces',serif; font-weight:600; font-size:20px;
+  background:color-mix(in srgb, var(--accent) 22%, var(--deep));
+  border:1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  color:var(--ink);
+  flex:none;
+}
+
+.subject-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+  gap:var(--s-3);
+}
+.subject-card{
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:var(--s-3);
+  border-radius:var(--radius-md);
+  background:var(--surface);
+  border:1px solid var(--border);
+  backdrop-filter:blur(14px);
+  transition:transform .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease);
+  opacity:0; transform:translateY(16px);
+  animation:cardIn .55s var(--ease) forwards;
+}
+.subject-card:hover{
+  transform:translateY(-4px);
+  border-color:color-mix(in srgb, var(--accent) 55%, var(--border));
+  background:var(--surface-2);
+}
+.subject-card-left{ display:flex; align-items:center; gap:14px; }
+.subject-badge{
+  width:40px; height:40px; border-radius:11px; flex:none;
+  background:color-mix(in srgb, var(--accent) 30%, var(--deep));
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+}
+.subject-name{ font-weight:600; font-size:15px; }
+.subject-go{
+  font-size:12px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
+  color:var(--gold-light); white-space:nowrap;
+}
+
+.empty-state{
+  text-align:center; padding:var(--s-6) var(--s-3);
+  color:var(--muted);
+  border:1px dashed var(--border);
+  border-radius:var(--radius-lg);
+}
+.empty-state strong{ display:block; color:var(--ink); font-family:'Fraunces',serif; font-size:1.2rem; margin-bottom:6px; }
+
+/* ================================================================
+   8. FOOTER
+   ================================================================ */
+footer{
+  text-align:center;
+  padding:var(--s-4) var(--s-3) var(--s-5);
+  color:var(--muted-2);
+  font-size:13px;
+  border-top:1px solid var(--border-soft);
+}
+.footer-inner{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+footer strong{ color:var(--gold-light); font-weight:600; }
+.footer-sep{ color:var(--border); }
+.footer-tg{
+  display:inline-flex; align-items:center; gap:5px;
+  color:rgba(43,200,194,0.7);
+  transition:color .2s;
+}
+.footer-tg:hover{ color:#2bc8c2; }
+
+/* ================================================================
+   9. RESPONSIVE TWEAKS
+   ================================================================ */
+@media (max-width:640px){
+  .hero{ padding:120px 16px 70px; min-height:92vh; }
+  .topbar{ padding:14px 16px; }
+  .cat-card{ min-height:240px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     STICKY TOP BAR (Header Area)
+     ================================================================ -->
+<header class="topbar">
+  <div class="brand">
+    <!-- LOGO එක මෙතනට ඇඩ් කරා -->
+    <div class="brand-seal">
+      <img id="logoImg" src="" alt="Logo" />
+    </div>
+    <div class="brand-name">
+      K3nfold Learning Hub
+      <small>Educational Streaming</small>
+    </div>
+  </div>
+  <a class="tg-link" href="https://t.me/k3N_edu" target="_blank" rel="noopener" aria-label="Join K3nfold on Telegram">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+    </svg>
+    <span>Join Channel</span>
+  </a>
+</header>
+
+<!-- ================================================================
+     HERO SECTION
+     ================================================================ -->
+<section class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-glow" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <span class="hero-eyebrow">A Premium Learning Experience</span>
+    <h1 class="hero-title">K3nfold Learning Hub</h1>
+    <p class="hero-subtitle">Choose your learning category.</p>
+
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search categories — Maths, Bio, Physics..."
+        autocomplete="off"
+        aria-label="Search categories"
+      />
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     MAIN CONTENT
+     ================================================================ -->
+<main>
+  <!-- LEVEL 01 -->
+  <section class="view" id="level1View">
+    <div class="section-head">
+      <span class="section-eyebrow">Level 01</span>
+      <h2 class="section-title">Browse Categories</h2>
+      <p class="section-sub">Six categories. Pick one to see what's inside.</p>
+    </div>
+    <div class="category-grid" id="categoryGrid"></div>
+  </section>
+
+  <!-- LEVEL 02 -->
+  <section class="view" id="level2View" hidden>
+    <button class="back-btn" id="backBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to Categories
+    </button>
+
+    <div class="level2-header">
+      <div class="level2-icon" id="level2Icon">--</div>
+      <div>
+        <span class="section-eyebrow" id="level2Eyebrow">Level 02</span>
+        <h2 class="section-title" id="level2Title">Category</h2>
+      </div>
+    </div>
+    <div class="subject-grid" id="subjectGrid"></div>
+  </section>
+</main>
+
+<!-- ================================================================
+     FOOTER
+     ================================================================ -->
+<footer>
+  <div class="footer-inner">
+    <span>Powered by <strong>K3nfold</strong></span>
+    <span class="footer-sep">·</span>
+    <a class="footer-tg" href="https://t.me/k3N_edu" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+      </svg>
+      t.me/k3N_edu
+    </a>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   IMAGE LINKS
+   ===================================================================== */
+
+/* ➜ LOGO එකේ ෆොටෝ ලින්ක් එක මෙතනට දාන්න */
+const LOGO_IMAGE = "https://pub-cd4df57608484c169938163d9b1f004e.r2.dev/IMG_20260609_180801_695.jpg"; 
+
+const BACKGROUND_IMAGE = "https://pub-cd4df57608484c169938163d9b1f004e.r2.dev/Knowledge_core_surrounded_by_for%E2%80%A6_202606171942.jpeg";
+const MATHS_IMAGE = "https://pub-cd4df57608484c169938163d9b1f004e.r2.dev/Mathematics_category_cover_dark_%E2%80%A6_202606171924.jpeg";
+const BIO_IMAGE = "https://pub-cd4df57608484c169938163d9b1f004e.r2.dev/Biology_category_cover_visualiza%E2%80%A6_202606171928.jpeg";
+const PHYSICS_IMAGE = "https://pub-cd4df57608484c169938163d9b1f004e.r2.dev/Physics_category_cover_banner_202606172020.jpeg";
+const CHEMISTRY_IMAGE = "https://pub-cd4df57608484c169938163d9b1f004e.r2.dev/Laboratory_glassware_chemical_re%E2%80%A6_202606171929.jpeg";
+const MEMORY_IMAGE = "https://pub-cd4df57608484c169938163d9b1f004e.r2.dev/Memory_training_category_cover_a%E2%80%A6_202606171930.jpeg";
+const AFTERAL_IMAGE = "https://pub-cd4df57608484c169938163d9b1f004e.r2.dev/Premium_Netflix-style_After_A_L_category_202606171934.jpeg";
+
+const categoriesData = [
+  {
+    id: "maths",
+    number: "01",
+    title: "Maths",
+    description: "Algebra, calculus, statistics and exam-focused problem solving.",
+    image: MATHS_IMAGE,
+    accent: "var(--c-maths)",
+    icon: "∑",
+    subjects: [{ name: "Example Subject", link: "./example-subject/index.html" }]
+  },
+  {
+    id: "bio",
+    number: "02",
+    title: "Bio",
+    description: "Cells, genetics, human systems and applied biology.",
+    image: BIO_IMAGE,
+    accent: "var(--c-bio)",
+    icon: "🧬",
+    subjects: [{ name: "Definitions Part I", link: "/Definitions-Master-Part-I.html" },
+        {name:"Definitions Part II", link:"/Definitions-Master-Part-II.html"}
+    ]
+    },
+  {
+    id: "physics",
+    number: "03",
+    title: "Physics",
+    description: "Mechanics, electricity, waves and modern physics.",
+    image: PHYSICS_IMAGE,
+    accent: "var(--c-physics)",
+    icon: "⚛",
+    subjects: [{ name: "Electronic", link: "/electronics-flashcard.html" },
+        {name: "Electrostatics", link: "/Electric_k3n.html"}
+    ]
+  },
+  {
+    id: "chemistry",
+    number: "04",
+    title: "Chemistry",
+    description: "Organic, inorganic and physical chemistry, simplified.",
+    image: CHEMISTRY_IMAGE,
+    accent: "var(--c-chem)",
+    icon: "⚗",
+    subjects: [{ name: "Inorganic", link: "https://k3ning.netlify.app/" },
+        {name: "Organic", link:"/organicRX.html"}
+    ]
+  },
+  {
+    id: "memory",
+    number: "05",
+    title: "Memory Training",
+    description: "Techniques and drills to recall more, faster, for longer.",
+    image: MEMORY_IMAGE,
+    accent: "var(--c-memory)",
+    icon: "🧠",
+    subjects: [{ name: "Stroop Effect", link: "/Stroop-Effect .html" },
+        {name:"Memory Boost",link:"/Memory-Boost.html"}
+    ]
+  },
+  {
+    id: "afteral",
+    number: "06",
+    title: "After A/L",
+    description: "What comes next — guidance for life after your A/Levels.",
+    image: AFTERAL_IMAGE,
+    accent: "var(--c-afteral)",
+    icon: "🎓",
+    subjects: [{ name: "How to Prove It", link: "/how-to-prove-it.html" }]
+  }
+];
+
+// බීජ්ගණිතමය වශයෙන් පින්තූර ඇප්ලයි කිරීම
+const heroBg = document.getElementById("heroBg");
+heroBg.style.backgroundImage = `url("${BACKGROUND_IMAGE}")`;
+
+const logoImg = document.getElementById("logoImg");
+if(logoImg) logoImg.src = LOGO_IMAGE;
+
+const categoryGrid  = document.getElementById("categoryGrid");
+const level1View    = document.getElementById("level1View");
+const level2View    = document.getElementById("level2View");
+const level2Title   = document.getElementById("level2Title");
+const level2Icon    = document.getElementById("level2Icon");
+const level2Eyebrow = document.getElementById("level2Eyebrow");
+const subjectGrid   = document.getElementById("subjectGrid");
+const backBtn       = document.getElementById("backBtn");
+const searchInput   = document.getElementById("searchInput");
+
+function renderCategoryGrid(filterText = "") {
+  const query = filterText.trim().toLowerCase();
+  const matches = categoriesData.filter(cat =>
+    cat.title.toLowerCase().includes(query) ||
+    cat.description.toLowerCase().includes(query)
+  );
+
+  if (matches.length === 0) {
+    categoryGrid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <strong>No categories match "${escapeHTML(filterText)}"</strong>
+        Try a different search term.
+      </div>`;
+    return;
+  }
+
+  categoryGrid.innerHTML = matches.map((cat, i) => `
+    <article
+      class="cat-card"
+      style="--accent:${cat.accent}; animation-delay:${i * 0.06}s"
+      data-id="${cat.id}"
+      tabindex="0"
+      role="button"
+      aria-label="Open ${cat.title} category"
+    >
+      <div class="cat-card-media" style="background-image:url('${cat.image}')"></div>
+      <div class="cat-card-shade"></div>
+      <span class="cat-card-number">${cat.number}</span>
+      <span class="cat-card-count">${cat.subjects.length} ${cat.subjects.length === 1 ? "subject" : "subjects"}</span>
+      <div class="cat-card-body">
+        <h3 class="cat-card-title">${cat.title}</h3>
+        <p class="cat-card-desc">${cat.description}</p>
+        <span class="cat-card-cta">Explore category →</span>
+      </div>
+    </article>
+  `).join("");
+
+  categoryGrid.querySelectorAll(".cat-card").forEach(card => {
+    card.addEventListener("click", () => openCategory(card.dataset.id, card));
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openCategory(card.dataset.id, card);
+      }
+    });
+  });
+}
+
+function escapeHTML(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function openCategory(categoryId, cardEl) {
+  if (cardEl) {
+    cardEl.classList.add("is-pressed");
+    setTimeout(() => cardEl.classList.remove("is-pressed"), 150);
+  }
+
+  const category = categoriesData.find(c => c.id === categoryId);
+  if (!category) return;
+
+  level1View.classList.add("is-out");
+  setTimeout(() => {
+    level1View.hidden = true;
+    level1View.classList.remove("is-out");
+
+    level2Title.textContent  = category.title;
+    level2Icon.textContent   = category.icon;
+    level2Icon.style.setProperty("--accent", category.accent);
+    level2Eyebrow.textContent = `Level 02 · ${category.title}`;
+
+    subjectGrid.innerHTML = category.subjects.map((subj, i) => `
+      <a
+        class="subject-card"
+        style="--accent:${category.accent}; animation-delay:${i * 0.06}s"
+        href="${subj.link}"
+      >
+        <span class="subject-card-left">
+          <span class="subject-badge">${category.icon}</span>
+          <span class="subject-name">${subj.name}</span>
+        </span>
+        <span class="subject-go">Open →</span>
+      </a>
+    `).join("");
+
+    level2View.hidden = false;
+    level2View.classList.add("is-out");
+    requestAnimationFrame(() => level2View.classList.remove("is-out"));
+  }, 280);
+}
+
+backBtn.addEventListener("click", () => {
+  level2View.classList.add("is-out");
+  setTimeout(() => {
+    level2View.hidden = true;
+    level2View.classList.remove("is-out");
+
+    level1View.hidden = false;
+    level1View.classList.add("is-out");
+    requestAnimationFrame(() => level1View.classList.remove("is-out"));
+  }, 280);
+});
+
+searchInput.addEventListener("input", (e) => {
+  if (level1View.hidden) {
+    level2View.hidden = true;
+    level1View.hidden = false;
+  }
+  renderCategoryGrid(e.target.value);
+});
+
+renderCategoryGrid();
+</script>
+
+</body>
+</html>
